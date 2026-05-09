@@ -44,7 +44,11 @@ export function getStudentProfile(): StudentProfile | null {
   try {
     const raw = localStorage.getItem(PROFILE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as StudentProfile;
+    const parsed = JSON.parse(raw) as StudentProfile;
+    if (!Array.isArray(parsed.hobbies)) {
+      parsed.hobbies = parsed.hobbies ? [parsed.hobbies as unknown as string] : [];
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -72,7 +76,8 @@ export function buildProfileContext(profile: StudentProfile): string {
   if (profile.learningStyle) lines.push(`Learning style: ${profile.learningStyle}`);
   if (profile.personality) lines.push(`Personality: ${profile.personality}`);
   if (profile.careerInterests.length) lines.push(`Career interests: ${profile.careerInterests.join(", ")}`);
-  if (profile.hobbies?.length) lines.push(`Hobbies / passions: ${profile.hobbies.join(", ")}`);
+  const hobbiesArr = Array.isArray(profile.hobbies) ? profile.hobbies : (profile.hobbies ? [profile.hobbies] : []);
+  if (hobbiesArr.length) lines.push(`Hobbies / passions: ${hobbiesArr.join(", ")}`);
   if (profile.workPreference) lines.push(`Work preference: ${profile.workPreference}`);
   if (profile.aspirations) lines.push(`Long-term aspirations: ${profile.aspirations}`);
   if (profile.concerns) lines.push(`Main concerns about the future: ${profile.concerns}`);
