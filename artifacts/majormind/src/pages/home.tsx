@@ -6,7 +6,7 @@ import { Button, Card, CardContent, Chip } from "@heroui/react";
 import { useAuth } from "@workspace/replit-auth-web";
 import Navbar from "@/components/Navbar";
 import logoUrl from "/logo.png";
-import { ArrowRight, Brain, MessageSquare, Award, BookOpen, TrendingUp, Users, ChevronDown, UserCircle } from "lucide-react";
+import { ArrowRight, Brain, MessageSquare, Award, BookOpen, TrendingUp, Users, ChevronDown, UserCircle, Archive } from "lucide-react";
 
 const STEPS = [
   {
@@ -95,8 +95,36 @@ function Reveal({
 export default function Home() {
   const [, setLocation] = useLocation();
   const [sessions, setSessions] = useState<StoredSession[]>([]);
+  const [showSessions, setShowSessions] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("majormind.sessionsOpen") === "true";
+    } catch {
+      return false;
+    }
+  });
   const heroRef = useRef<HTMLDivElement>(null);
+  const sessionsGridRef = useRef<HTMLDivElement>(null);
+  const pendingScrollRef = useRef(false);
   const { isAuthenticated, isLoading: authLoading, login } = useAuth();
+
+  const toggleSessions = (next?: boolean) => {
+    const val = next !== undefined ? next : !showSessions;
+    setShowSessions(val);
+    try {
+      localStorage.setItem("majormind.sessionsOpen", String(val));
+    } catch {}
+  };
+
+  useEffect(() => {
+    if (showSessions && pendingScrollRef.current) {
+      pendingScrollRef.current = false;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.getElementById("sessions")?.scrollIntoView({ behavior: "smooth" });
+        });
+      });
+    }
+  }, [showSessions]);
 
   useEffect(() => {
     let active = true;
@@ -238,7 +266,14 @@ export default function Home() {
             <p className="text-sm text-muted-foreground animate-in fade-in duration-1000 delay-500">
               You have {sessions.length} previous session{sessions.length > 1 ? "s" : ""} —{" "}
               <button
-                onClick={() => document.getElementById("sessions")?.scrollIntoView({ behavior: "smooth" })}
+                onClick={() => {
+                  if (!showSessions) {
+                    pendingScrollRef.current = true;
+                    toggleSessions(true);
+                  } else {
+                    document.getElementById("sessions")?.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
                 className="underline underline-offset-2 hover:text-foreground transition-colors"
               >
                 resume one
@@ -383,25 +418,44 @@ export default function Home() {
         </Reveal>
       </section>
 
-      {/* ── Previous Sessions ── */}
+      {/* ── Session Archive ── */}
       {sessions.length > 0 && (
-        <section id="sessions" className="max-w-6xl mx-auto px-6 pb-24 space-y-8">
-          <Reveal>
-            <div className="flex items-center justify-between">
-              <h2 className="text-3xl font-serif" style={{ color: "#71151a" }}>Your previous sessions</h2>
-              {isAuthenticated && (
-                <span className="text-xs text-muted-foreground bg-[--surface-secondary] px-3 py-1 rounded-full border border-[--border]">
-                  Synced across devices
-                </span>
-              )}
-            </div>
-          </Reveal>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {sessions.map((session, i) => {
-              const isComplete = !!session.recommendation;
-              return (
-                <Reveal key={session.id} delay={i * 80}>
-                  <Link href={isComplete ? `/result/${session.id}` : `/interview/${session.id}`} className="block group">
+        <section id="sessions" className="max-w-6xl mx-auto px-6 pb-24">
+          {/* Toggle trigger */}
+          <button
+            onClick={() => toggleSessions()}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4 group"
+            aria-expanded={showSessions}
+          >
+            <Archive className="w-3.5 h-3.5 opacity-60" />
+            <span>Session archive</span>
+            <span className="px-1.5 py-0.5 text-xs rounded-full bg-[--surface-secondary] border border-[--border] leading-none">
+              {sessions.length}
+            </span>
+            {isAuthenticated && (
+              <span className="text-xs text-muted-foreground bg-[--surface-secondary] px-2 py-0.5 rounded-full border border-[--border] leading-none">
+                Synced
+              </span>
+            )}
+            <ChevronDown
+              className="w-3.5 h-3.5 opacity-60 transition-transform duration-300"
+              style={{ transform: showSessions ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
+
+          {/* Animated sessions grid */}
+          <div
+            className="overflow-hidden transition-all duration-500 ease-in-out"
+            style={{
+              maxHeight: showSessions ? `${sessionsGridRef.current?.scrollHeight ?? 9999}px` : "0px",
+              opacity: showSessions ? 1 : 0,
+            }}
+          >
+            <div ref={sessionsGridRef} className="grid sm:grid-cols-2 gap-4 pt-2">
+              {sessions.map((session, i) => {
+                const isComplete = !!session.recommendation;
+                return (
+                  <Link key={session.id} href={isComplete ? `/result/${session.id}` : `/interview/${session.id}`} className="block group">
                     <Card
                       className="hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
                       style={{ boxShadow: "var(--surface-shadow)" }}
@@ -426,9 +480,9 @@ export default function Home() {
                       </CardContent>
                     </Card>
                   </Link>
-                </Reveal>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </section>
       )}
