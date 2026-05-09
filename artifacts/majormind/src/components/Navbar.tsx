@@ -1,7 +1,9 @@
 import { useLocation } from "wouter";
-import { Button } from "@heroui/react";
+import { Button, Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
 import { createSession } from "@/lib/sessions";
+import { useAuth } from "@workspace/replit-auth-web";
 import logoUrl from "/logo.png";
+import { LogIn, LogOut, User } from "lucide-react";
 
 interface NavbarProps {
   variant?: "landing" | "app";
@@ -9,6 +11,7 @@ interface NavbarProps {
 
 export default function Navbar({ variant = "app" }: NavbarProps) {
   const [location, setLocation] = useLocation();
+  const { user, isLoading, isAuthenticated, login, logout } = useAuth();
 
   const handleStart = () => {
     const session = createSession();
@@ -16,6 +19,10 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
   };
 
   const isHome = location === "/";
+
+  const displayName = user
+    ? [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "Account"
+    : null;
 
   return (
     <nav
@@ -45,6 +52,53 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
               Home
             </Button>
           )}
+
+          {!isLoading && (
+            isAuthenticated && user ? (
+              <Dropdown>
+                <DropdownTrigger>
+                  <button className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-[--surface-secondary] transition-colors text-sm font-medium">
+                    {user.profileImageUrl ? (
+                      <Avatar
+                        src={user.profileImageUrl}
+                        size="sm"
+                        className="w-7 h-7"
+                      />
+                    ) : (
+                      <div
+                        className="w-7 h-7 rounded-full flex items-center justify-center"
+                        style={{ background: "color-mix(in oklab, var(--accent) 20%, transparent)" }}
+                      >
+                        <User className="w-4 h-4" style={{ color: "var(--accent-foreground)" }} />
+                      </div>
+                    )}
+                    <span className="hidden sm:block text-foreground max-w-[120px] truncate">{displayName}</span>
+                  </button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="User menu">
+                  <DropdownItem
+                    key="logout"
+                    startContent={<LogOut className="w-4 h-4" />}
+                    onPress={logout}
+                    className="text-foreground"
+                  >
+                    Log out
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onPress={login}
+                className="rounded-full px-4 font-medium flex items-center gap-1.5"
+              >
+                <LogIn className="w-4 h-4" />
+                Log in
+              </Button>
+            )
+          )}
+
           {variant === "landing" && (
             <Button
               variant="primary"

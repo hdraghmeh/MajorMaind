@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { getSessions, createSession, type StoredSession } from "@/lib/sessions";
+import { getSessions, createSession, loadSessionsFromServer, mergeServerSessions, backfillLocalSessionsToServer, type StoredSession } from "@/lib/sessions";
 import { Button, Card, CardContent, Chip } from "@heroui/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import Navbar from "@/components/Navbar";
 import logoUrl from "/logo.png";
-import { ArrowRight, Brain, MessageSquare, Award, BookOpen, TrendingUp, Users, ChevronDown } from "lucide-react";
+import { ArrowRight, Brain, MessageSquare, Award, BookOpen, TrendingUp, Users, ChevronDown, LogIn } from "lucide-react";
 
 const STEPS = [
   {
@@ -45,8 +46,8 @@ const FEATURES = [
   },
   {
     icon: Users,
-    title: "Completely private",
-    desc: "Your conversations stay on your device. No account required, no data shared, no ads. Just honest guidance.",
+    title: "Private by default",
+    desc: "No account required. Sign in to save your sessions across devices — your data is never shared or sold.",
   },
 ];
 
@@ -94,13 +95,32 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [sessions, setSessions] = useState<StoredSession[]>([]);
   const heroRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated, isLoading: authLoading, login } = useAuth();
 
   useEffect(() => {
-    const all = Object.values(getSessions()).sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    );
-    setSessions(all);
-  }, []);
+    let active = true;
+
+    async function loadSessions() {
+      if (isAuthenticated) {
+        const serverSessions = await loadSessionsFromServer();
+        if (!active) return;
+        await backfillLocalSessionsToServer(serverSessions);
+        await mergeServerSessions(serverSessions);
+      }
+
+      if (!active) return;
+      const all = Object.values(getSessions()).sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+      setSessions(all);
+    }
+
+    if (!authLoading) {
+      loadSessions();
+    }
+
+    return () => { active = false; };
+  }, [isAuthenticated, authLoading]);
 
   const handleStart = () => {
     const session = createSession();
@@ -183,6 +203,18 @@ export default function Home() {
               How it works
             </Button>
           </div>
+
+          {!authLoading && !isAuthenticated && (
+            <p className="text-sm text-muted-foreground animate-in fade-in duration-1000 delay-500">
+              <button
+                onClick={login}
+                className="inline-flex items-center gap-1.5 underline underline-offset-2 hover:text-foreground transition-colors"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                Sign in to save your sessions across devices
+              </button>
+            </p>
+          )}
 
           {sessions.length > 0 && (
             <p className="text-sm text-muted-foreground animate-in fade-in duration-1000 delay-500">
@@ -337,7 +369,14 @@ export default function Home() {
       {sessions.length > 0 && (
         <section id="sessions" className="max-w-6xl mx-auto px-6 pb-24 space-y-8">
           <Reveal>
-            <h2 className="text-3xl font-serif" style={{ color: "#71151a" }}>Your previous sessions</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-3xl font-serif" style={{ color: "#71151a" }}>Your previous sessions</h2>
+              {isAuthenticated && (
+                <span className="text-xs text-muted-foreground bg-[--surface-secondary] px-3 py-1 rounded-full border border-[--border]">
+                  Synced across devices
+                </span>
+              )}
+            </div>
           </Reveal>
           <div className="grid sm:grid-cols-2 gap-4">
             {sessions.map((session, i) => {
@@ -386,7 +425,7 @@ export default function Home() {
               <p className="text-xs text-muted-foreground">AI Academic System</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground text-center">Built for Tawjihi students. No data stored on servers.</p>
+          <p className="text-sm text-muted-foreground text-center">Built for Tawjihi students. Sign in to sync your sessions.</p>
         </div>
       </footer>
     </div>

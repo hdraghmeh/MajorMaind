@@ -189,3 +189,275 @@ export const FinalizeInterviewResponse = zod.object({
     .optional()
     .describe("Final recommendation. Present when kind=result."),
 });
+
+/**
+ * @summary Get the currently authenticated user
+ */
+export const GetCurrentAuthUserHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const GetCurrentAuthUserResponse = zod.object({
+  user: zod.union([
+    zod.object({
+      id: zod.string(),
+      email: zod.string().email().nullable(),
+      firstName: zod.string().nullable(),
+      lastName: zod.string().nullable(),
+      profileImageUrl: zod.string().nullable(),
+    }),
+    zod.null(),
+  ]),
+});
+
+/**
+ * @summary Start the browser OIDC login flow
+ */
+export const BeginBrowserLoginQueryParams = zod.object({
+  returnTo: zod.coerce
+    .string()
+    .optional()
+    .describe(
+      "Relative path to redirect to after login (must start with `\/`). Defaults to `\/`.",
+    ),
+});
+
+/**
+ * @summary Complete the browser OIDC login flow
+ */
+export const HandleBrowserLoginCallbackQueryParams = zod.object({
+  code: zod.coerce.string().optional(),
+  state: zod.coerce.string().optional(),
+  iss: zod.coerce.string().url().optional(),
+});
+
+/**
+ * @summary Clear the session and begin OIDC logout
+ */
+export const LogoutBrowserSessionHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+/**
+ * @summary Exchange a mobile OIDC code for a session token
+ */
+
+export const ExchangeMobileAuthorizationCodeBody = zod.object({
+  code: zod.string().min(1),
+  code_verifier: zod.string().min(1),
+  redirect_uri: zod.string().url().min(1),
+  state: zod.string().min(1),
+  nonce: zod.string().min(1).optional(),
+});
+
+export const ExchangeMobileAuthorizationCodeResponse = zod.object({
+  token: zod.string(),
+});
+
+/**
+ * @summary Delete a mobile session token
+ */
+export const LogoutMobileSessionHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const LogoutMobileSessionResponse = zod.object({
+  success: zod.boolean(),
+});
+
+/**
+ * @summary List all interview sessions for the authenticated user
+ */
+export const ListInterviewSessionsHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const listInterviewSessionsResponseSessionsItemProgressOnePercentMin = 0;
+export const listInterviewSessionsResponseSessionsItemProgressOnePercentMax = 100;
+
+export const listInterviewSessionsResponseSessionsItemRecommendationOneMatchScoreMin = 0;
+export const listInterviewSessionsResponseSessionsItemRecommendationOneMatchScoreMax = 100;
+
+export const ListInterviewSessionsResponse = zod.object({
+  sessions: zod.array(
+    zod.object({
+      id: zod.string(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+      title: zod.string().nullish(),
+      messages: zod.array(
+        zod.object({
+          role: zod.enum(["student", "advisor"]),
+          content: zod.string(),
+        }),
+      ),
+      progress: zod
+        .union([
+          zod
+            .object({
+              percent: zod
+                .number()
+                .min(
+                  listInterviewSessionsResponseSessionsItemProgressOnePercentMin,
+                )
+                .max(
+                  listInterviewSessionsResponseSessionsItemProgressOnePercentMax,
+                ),
+              stage: zod
+                .string()
+                .describe("A short human-readable stage label."),
+            })
+            .describe("Subtle, non-checklist progress signal (0-100)."),
+          zod.null(),
+        ])
+        .optional(),
+      recommendation: zod
+        .union([
+          zod.object({
+            recommendedMajor: zod.string(),
+            matchScore: zod
+              .number()
+              .min(
+                listInterviewSessionsResponseSessionsItemRecommendationOneMatchScoreMin,
+              )
+              .max(
+                listInterviewSessionsResponseSessionsItemRecommendationOneMatchScoreMax,
+              ),
+            whyItFits: zod.array(zod.string()),
+            alternativeMajors: zod.array(zod.string()),
+            academicStrengths: zod.array(zod.string()),
+            careerAdvice: zod.array(zod.string()),
+            closingMessage: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
+});
+
+/**
+ * @summary Save or update an interview session
+ */
+export const SaveInterviewSessionParams = zod.object({
+  sessionId: zod.coerce.string(),
+});
+
+export const SaveInterviewSessionHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const saveInterviewSessionBodyProgressOnePercentMin = 0;
+export const saveInterviewSessionBodyProgressOnePercentMax = 100;
+
+export const saveInterviewSessionBodyRecommendationOneMatchScoreMin = 0;
+export const saveInterviewSessionBodyRecommendationOneMatchScoreMax = 100;
+
+export const SaveInterviewSessionBody = zod.object({
+  id: zod.string(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+  title: zod.string().nullish(),
+  messages: zod.array(
+    zod.object({
+      role: zod.enum(["student", "advisor"]),
+      content: zod.string(),
+    }),
+  ),
+  progress: zod
+    .union([
+      zod
+        .object({
+          percent: zod
+            .number()
+            .min(saveInterviewSessionBodyProgressOnePercentMin)
+            .max(saveInterviewSessionBodyProgressOnePercentMax),
+          stage: zod.string().describe("A short human-readable stage label."),
+        })
+        .describe("Subtle, non-checklist progress signal (0-100)."),
+      zod.null(),
+    ])
+    .optional(),
+  recommendation: zod
+    .union([
+      zod.object({
+        recommendedMajor: zod.string(),
+        matchScore: zod
+          .number()
+          .min(saveInterviewSessionBodyRecommendationOneMatchScoreMin)
+          .max(saveInterviewSessionBodyRecommendationOneMatchScoreMax),
+        whyItFits: zod.array(zod.string()),
+        alternativeMajors: zod.array(zod.string()),
+        academicStrengths: zod.array(zod.string()),
+        careerAdvice: zod.array(zod.string()),
+        closingMessage: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional(),
+});
+
+export const saveInterviewSessionResponseProgressOnePercentMin = 0;
+export const saveInterviewSessionResponseProgressOnePercentMax = 100;
+
+export const saveInterviewSessionResponseRecommendationOneMatchScoreMin = 0;
+export const saveInterviewSessionResponseRecommendationOneMatchScoreMax = 100;
+
+export const SaveInterviewSessionResponse = zod.object({
+  id: zod.string(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+  title: zod.string().nullish(),
+  messages: zod.array(
+    zod.object({
+      role: zod.enum(["student", "advisor"]),
+      content: zod.string(),
+    }),
+  ),
+  progress: zod
+    .union([
+      zod
+        .object({
+          percent: zod
+            .number()
+            .min(saveInterviewSessionResponseProgressOnePercentMin)
+            .max(saveInterviewSessionResponseProgressOnePercentMax),
+          stage: zod.string().describe("A short human-readable stage label."),
+        })
+        .describe("Subtle, non-checklist progress signal (0-100)."),
+      zod.null(),
+    ])
+    .optional(),
+  recommendation: zod
+    .union([
+      zod.object({
+        recommendedMajor: zod.string(),
+        matchScore: zod
+          .number()
+          .min(saveInterviewSessionResponseRecommendationOneMatchScoreMin)
+          .max(saveInterviewSessionResponseRecommendationOneMatchScoreMax),
+        whyItFits: zod.array(zod.string()),
+        alternativeMajors: zod.array(zod.string()),
+        academicStrengths: zod.array(zod.string()),
+        careerAdvice: zod.array(zod.string()),
+        closingMessage: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional(),
+});
