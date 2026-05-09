@@ -6,6 +6,7 @@ import {
   InterviewTurnResponse,
 } from "@workspace/api-zod";
 import { saveInterviewRecord } from "../lib/saveInterviewRecord";
+import { getEligibleMajors, formatEligibleMajorsForPrompt, canonicalBranch, AAUP_MAJORS } from "../lib/aaupData";
 
 const router: IRouter = Router();
 
@@ -77,6 +78,7 @@ const RESPONSE_SCHEMA = {
             academicStrengths: { type: "array", items: { type: "string" } },
             careerAdvice: { type: "array", items: { type: "string" } },
             closingMessage: { type: "string" },
+            admissionNote: { type: ["string", "null"] },
           },
           required: [
             "recommendedMajor",
@@ -96,6 +98,16 @@ const RESPONSE_SCHEMA = {
 
 type InterviewMessage = { role: "student" | "advisor"; content: string };
 
+function extractProfileFields(profileContext: string): { stream: string; gpa: number } | null {
+  const streamMatch = profileContext.match(/Tawjihi stream:\s*(\S+)/i);
+  const gpaMatch = profileContext.match(/Tawjihi average:\s*([\d.]+)/i);
+  if (!streamMatch || !gpaMatch) return null;
+  const stream = streamMatch[1].toLowerCase().replace(/\s+/g, "");
+  const gpa = parseFloat(gpaMatch[1]);
+  if (isNaN(gpa)) return null;
+  return { stream, gpa };
+}
+
 async function runTurn(
   req: Request,
   res: Response,
@@ -103,9 +115,28 @@ async function runTurn(
   forceFinalize: boolean,
   profileContext?: string,
 ) {
-  // Combine base system prompt with student profile context if provided
+  let aaupSection = "";
+
+  if (profileContext) {
+    const fields = extractProfileFields(profileContext);
+    if (fields) {
+      const branch = canonicalBranch(fields.stream);
+      const eligible = getEligibleMajors(fields.stream, fields.gpa);
+      const noEligible = eligible.length === 0;
+
+      if (noEligible) {
+        const fullList = formatEligibleMajorsForPrompt([...AAUP_MAJORS], branch);
+        aaupSection = `\n\n[AAUP ELIGIBILITY — NO DIRECT MATCH]\nThe student's GPA (${fields.gpa}%) is below the minimum for every AAUP major in their branch (${branch || fields.stream}). Recommend from the full AAUP catalogue below, but you MUST set admissionNote to clearly explain that the student's current GPA does not yet meet AAUP admission requirements and they should verify eligibility directly with AAUP or consider improving their score.\n\nFull AAUP catalogue:\n${fullList}`;
+      } else {
+        const majorsList = formatEligibleMajorsForPrompt(eligible, branch);
+        aaupSection = `\n\n[AAUP ELIGIBLE MAJORS — ${eligible.length} majors available for this student]\nYou MUST recommend only from the list below. These are the AAUP majors the student qualifies for based on their Tawjihi stream (${branch}) and GPA (${fields.gpa}%). When producing the final recommendation:\n- Set "recommendedMajor" to a major NAME from this list.\n- Set "alternativeMajors" to 2-4 major NAMES from this list.\n- In "admissionNote", write a concise 1-2 sentence note confirming the student's GPA against the minScore for the recommended major, e.g. "Your GPA of ${fields.gpa}% meets the ${branch} minimum of [minScore]% required for this major at AAUP."\n- Reference the faculty name, career sectors, and required skills from the data below when explaining why it fits.\n\nEligible majors (name | faculty | minScore | skills | interests | careerSectors):\n${majorsList}`;
+      }
+    }
+  }
+
+  // Combine base system prompt with student profile context and AAUP eligibility data
   const systemContent = profileContext
-    ? `${SYSTEM_PROMPT}\n\n${profileContext}`
+    ? `${SYSTEM_PROMPT}\n\n${profileContext}${aaupSection}`
     : SYSTEM_PROMPT;
 
   const chatMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [

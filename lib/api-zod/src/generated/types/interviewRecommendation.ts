@@ -18,4 +18,5 @@ export interface InterviewRecommendation {
   academicStrengths: string[];
   careerAdvice: string[];
   closingMessage: string;
+  admissionNote?: string | null;
 }

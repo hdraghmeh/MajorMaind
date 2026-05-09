@@ -46,6 +46,7 @@ export default function Interview() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
+  const profileContextRef = useRef<string | null>(null);
   const turnMutation = useInterviewTurn();
 
   const { speak, cancel, isSpeaking, isMuted, toggleMute, isSupported } = useSpeech();
@@ -65,10 +66,16 @@ export default function Interview() {
 
     if (s.messages.length === 0 && !initialized.current) {
       initialized.current = true;
-      // Build profile context to inject into the first AI turn
+      // Build profile context once and store it — reused on every subsequent turn
       const profile = getStudentProfile();
       const profileCtx = profile?.name ? buildProfileContext(profile) : null;
+      profileContextRef.current = profileCtx;
       runTurn([], s, false, profileCtx);
+    } else if (s.messages.length > 0) {
+      // Resuming an in-progress session — rebuild profile context so it is
+      // available on the next turn without a page reload
+      const profile = getStudentProfile();
+      profileContextRef.current = profile?.name ? buildProfileContext(profile) : null;
     }
   }, [params?.sessionId]);
 
@@ -167,13 +174,13 @@ export default function Interview() {
     setSession(updatedSession);
     setInput("");
 
-    await runTurn(updatedMessages, updatedSession);
+    await runTurn(updatedMessages, updatedSession, false, profileContextRef.current);
   };
 
   const handleForceFinalize = async () => {
     if (!session || avatarState === "thinking") return;
     cancel();
-    await runTurn(session.messages, session, true);
+    await runTurn(session.messages, session, true, profileContextRef.current);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

@@ -57,6 +57,7 @@ export const StartInterviewResponse = zod.object({
         academicStrengths: zod.array(zod.string()),
         careerAdvice: zod.array(zod.string()),
         closingMessage: zod.string(),
+        admissionNote: zod.string().nullish(),
       }),
       zod.null(),
     ])
@@ -129,6 +130,7 @@ export const InterviewTurnResponse = zod.object({
         academicStrengths: zod.array(zod.string()),
         careerAdvice: zod.array(zod.string()),
         closingMessage: zod.string(),
+        admissionNote: zod.string().nullish(),
       }),
       zod.null(),
     ])
@@ -189,6 +191,7 @@ export const FinalizeInterviewResponse = zod.object({
         academicStrengths: zod.array(zod.string()),
         careerAdvice: zod.array(zod.string()),
         closingMessage: zod.string(),
+        admissionNote: zod.string().nullish(),
       }),
       zod.null(),
     ])
@@ -346,6 +349,7 @@ export const ListInterviewSessionsResponse = zod.object({
             academicStrengths: zod.array(zod.string()),
             careerAdvice: zod.array(zod.string()),
             closingMessage: zod.string(),
+            admissionNote: zod.string().nullish(),
           }),
           zod.null(),
         ])
@@ -412,6 +416,7 @@ export const SaveInterviewSessionBody = zod.object({
         academicStrengths: zod.array(zod.string()),
         careerAdvice: zod.array(zod.string()),
         closingMessage: zod.string(),
+        admissionNote: zod.string().nullish(),
       }),
       zod.null(),
     ])
@@ -462,6 +467,7 @@ export const SaveInterviewSessionResponse = zod.object({
         academicStrengths: zod.array(zod.string()),
         careerAdvice: zod.array(zod.string()),
         closingMessage: zod.string(),
+        admissionNote: zod.string().nullish(),
       }),
       zod.null(),
     ])

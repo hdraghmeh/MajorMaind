@@ -212,6 +212,20 @@ export default function Result() {
                 <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>Match score</p>
               </div>
             </div>
+            {r.admissionNote && (
+              <div
+                className="relative mt-4 pt-4 border-t flex items-start gap-2"
+                style={{ borderColor: "rgba(255,255,255,0.2)" }}
+              >
+                <GraduationCap className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "rgba(255,255,255,0.75)" }} />
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: "rgba(255,255,255,0.85)", direction: IS_AR(r.admissionNote) ? "rtl" : "ltr" }}
+                >
+                  {CLEAN(r.admissionNote)}
+                </p>
+              </div>
+            )}
           </div>
         </FadeIn>
 
