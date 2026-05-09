@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Send, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import logoUrl from "/logo.png";
 
 const EMOJI_RE = /[\u{1F1E0}-\u{1F1FF}\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu;
 const stripEmoji = (s: string) => s.replace(EMOJI_RE, "").replace(/\s+/g, " ").trim();
@@ -115,25 +116,26 @@ export default function Interview() {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background">
-      <header className="flex-none p-4 border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex flex-col gap-1 w-full max-w-sm">
-            <div className="flex justify-between text-sm text-muted-foreground">
+      <header className="flex-none px-4 py-3 border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto flex items-center gap-4">
+          <img src={logoUrl} alt="MajorMind" className="h-8 w-auto object-contain shrink-0" />
+          <div className="flex-1 flex flex-col gap-1 min-w-0">
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>{session.progress?.stage || "Getting started"}</span>
               <span>{session.progress?.percent || 0}%</span>
             </div>
             <Progress value={session.progress?.percent || 0} className="h-1.5" />
           </div>
           {session.messages.length > 2 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleForceFinalize}
               disabled={turnMutation.isPending}
-              className="text-muted-foreground hover:text-foreground text-xs"
+              className="text-muted-foreground hover:text-foreground text-xs shrink-0"
             >
-              <CheckCircle2 className="w-4 h-4 mr-2" />
-              Ready for recommendation
+              <CheckCircle2 className="w-4 h-4 mr-1.5" />
+              Get result
             </Button>
           )}
         </div>

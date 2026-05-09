@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Copy, Download, Printer, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import logoUrl from "/logo.png";
 
 export default function Result() {
   const [, params] = useRoute("/result/:sessionId");
@@ -77,21 +78,29 @@ ${recommendation.closingMessage}
 
   return (
     <div className="min-h-[100dvh] bg-background selection:bg-primary/30">
-      <header className="p-4 md:p-6 max-w-4xl mx-auto flex items-center justify-between">
-        <Button variant="ghost" onClick={() => setLocation("/")} className="text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Home
-        </Button>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleCopy}>
-            <Copy className="w-4 h-4 mr-2" /> Copy
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleDownload}>
-            <Download className="w-4 h-4 mr-2" /> Export
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => window.print()}>
-            <Printer className="w-4 h-4 mr-2" /> Print
-          </Button>
+      <header className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-sm">
+        <div className="p-4 md:px-6 max-w-4xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => setLocation("/")} className="text-muted-foreground hover:text-foreground -ml-2">
+              <ArrowLeft className="w-4 h-4 mr-1.5" />
+              Home
+            </Button>
+            <img src={logoUrl} alt="MajorMind" className="h-8 w-auto object-contain hidden sm:block" />
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleCopy}>
+              <Copy className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Copy</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDownload}>
+              <Download className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Export</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Printer className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Print</span>
+            </Button>
+          </div>
         </div>
       </header>
 
