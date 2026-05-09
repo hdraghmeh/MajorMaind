@@ -32,7 +32,7 @@ const FEATURES = [
   {
     icon: BookOpen,
     title: "Built for Tawjihi",
-    desc: "Designed specifically around the Jordanian and Palestinian secondary school system — scientific, literary, and all streams.",
+    desc: "Designed specifically around the Palestinian Tawjihi system — scientific, literary, and all streams.",
   },
   {
     icon: Brain,
