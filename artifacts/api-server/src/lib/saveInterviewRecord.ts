@@ -1,6 +1,5 @@
-import fs from "fs";
-import path from "path";
 import crypto from "crypto";
+import { db, completedInterviewsTable } from "@workspace/db";
 
 export interface InterviewMessage {
   role: "student" | "advisor";
@@ -35,13 +34,6 @@ export interface InterviewRecord {
   fullConversation: InterviewMessage[];
 }
 
-// Resolve the storage directory relative to this file's location
-const DATA_DIR = path.resolve(
-  path.dirname(new URL(import.meta.url).pathname),
-  "../../data/completed-interviews",
-);
-
-/** Pair each advisor question with the student answer that followed it. */
 function extractQA(
   messages: InterviewMessage[],
 ): Array<{ question: string; answer: string }> {
@@ -57,19 +49,12 @@ function extractQA(
   return pairs;
 }
 
-/**
- * Save a completed interview to disk as a JSON file.
- * Directory is created automatically if it does not exist.
- * Returns the path of the saved file.
- */
 export async function saveInterviewRecord(
   messages: InterviewMessage[],
   recommendation: InterviewRecommendation,
   user: InterviewRecordUser | null,
 ): Promise<string> {
   const recordId = crypto.randomBytes(8).toString("hex");
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const filename = `${timestamp}_${recordId}.json`;
 
   const record: InterviewRecord = {
     recordId,
@@ -88,10 +73,17 @@ export async function saveInterviewRecord(
     fullConversation: messages,
   };
 
-  await fs.promises.mkdir(DATA_DIR, { recursive: true });
+  await db.insert(completedInterviewsTable).values({
+    id: recordId,
+    userId: user?.id ?? null,
+    userEmail: user?.email ?? null,
+    userFirstName: user?.firstName ?? null,
+    userLastName: user?.lastName ?? null,
+    recommendedMajor: recommendation.recommendedMajor,
+    matchScore: recommendation.matchScore,
+    totalMessages: messages.length,
+    record: record as unknown as Record<string, unknown>,
+  });
 
-  const filePath = path.join(DATA_DIR, filename);
-  await fs.promises.writeFile(filePath, JSON.stringify(record, null, 2), "utf8");
-
-  return filePath;
+  return recordId;
 }
