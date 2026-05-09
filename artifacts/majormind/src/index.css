@@ -157,6 +157,38 @@
   100% { transform: scale(1.4); opacity: 0; }
 }
 
+@keyframes avatar-breathe {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 18px #84e4a828, 0 4px 12px rgba(0,0,0,0.18); }
+  50%       { transform: scale(1.04); box-shadow: 0 0 32px #84e4a848, 0 4px 16px rgba(0,0,0,0.20); }
+}
+
+@keyframes avatar-ring-pulse {
+  0%   { transform: scale(1);    opacity: 0.75; }
+  70%  { transform: scale(1.32); opacity: 0; }
+  100% { transform: scale(1.32); opacity: 0; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes thinking-bounce {
+  0%, 60%, 100% { transform: translateY(0px); }
+  30%            { transform: translateY(-5px); }
+}
+
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes reaction-pop {
+  0%   { opacity: 0; transform: translateY(6px) scale(0.95); }
+  60%  { opacity: 1; transform: translateY(-1px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 /* ── Animation Classes ── */
 .animate-float        { animation: float 4s ease-in-out infinite; }
 .animate-orb-drift    { animation: orb-drift 9s ease-in-out infinite; }
