@@ -14,13 +14,22 @@ const THINKING_LINES = [
   "Mapping your strengths...",
 ];
 
+// Waveform bar heights (relative, 0–1)
+const WAVE_BARS = [0.45, 0.75, 1, 0.85, 0.55, 0.9, 0.65];
+
 interface Props {
   state: AvatarState;
   microReaction?: string | null;
+  isVoiceActive?: boolean;
   size?: number;
 }
 
-export default function AIAvatar({ state, microReaction, size = 76 }: Props) {
+export default function AIAvatar({
+  state,
+  microReaction,
+  isVoiceActive = false,
+  size = 76,
+}: Props) {
   const [thinkingIdx, setThinkingIdx] = useState(0);
   const [labelKey, setLabelKey] = useState(0);
 
@@ -38,34 +47,40 @@ export default function AIAvatar({ state, microReaction, size = 76 }: Props) {
 
   useEffect(() => {
     setLabelKey((k) => k + 1);
-  }, [state, microReaction]);
+  }, [state, microReaction, isVoiceActive]);
 
   const ring1 = size + 20;
   const ring2 = size + 42;
 
+  // When voice is active and avatar has returned to idle, keep speaking visuals
+  const displayState: AvatarState =
+    isVoiceActive && state === "idle" ? "speaking" : state;
+
   const glowStyle =
-    state === "idle"
+    displayState === "idle"
       ? `0 0 18px ${GREEN}28, 0 4px 14px rgba(0,0,0,0.18)`
-      : state === "thinking"
+      : displayState === "thinking"
       ? `0 0 30px ${GREEN}55, 0 4px 18px rgba(0,0,0,0.22)`
-      : `0 0 44px ${GREEN}80, 0 6px 22px rgba(0,0,0,0.24)`;
+      : `0 0 48px ${GREEN}85, 0 6px 22px rgba(0,0,0,0.24)`;
+
+  const showPulseRings = displayState === "speaking" || displayState === "result";
+  const showWaveform = isVoiceActive;
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-3">
       {/* ── Avatar orb ── */}
       <div className="relative" style={{ width: ring2, height: ring2 }}>
-
         {/* Outer ambient halo */}
         <div
           className="absolute inset-0 rounded-full pointer-events-none"
           style={{
-            background: `radial-gradient(circle, ${GREEN}${state === "idle" ? "12" : "26"} 0%, transparent 70%)`,
+            background: `radial-gradient(circle, ${GREEN}${displayState === "idle" ? "12" : "28"} 0%, transparent 70%)`,
             transition: "background 0.6s ease",
           }}
         />
 
         {/* Spinning arc — thinking */}
-        {state === "thinking" && (
+        {displayState === "thinking" && (
           <div
             className="absolute rounded-full pointer-events-none"
             style={{
@@ -78,8 +93,8 @@ export default function AIAvatar({ state, microReaction, size = 76 }: Props) {
           />
         )}
 
-        {/* Pulse rings — speaking / result */}
-        {(state === "speaking" || state === "result") && (
+        {/* Pulse rings — speaking / voice active / result */}
+        {showPulseRings && (
           <>
             <div
               className="absolute inset-0 rounded-full pointer-events-none"
@@ -106,7 +121,7 @@ export default function AIAvatar({ state, microReaction, size = 76 }: Props) {
             height: ring1,
             top: (ring2 - ring1) / 2,
             left: (ring2 - ring1) / 2,
-            border: `1px solid ${GREEN}${state === "idle" ? "22" : "45"}`,
+            border: `1px solid ${GREEN}${displayState === "idle" ? "22" : "50"}`,
             transition: "border-color 0.5s ease",
           }}
         />
@@ -119,8 +134,7 @@ export default function AIAvatar({ state, microReaction, size = 76 }: Props) {
             height: size,
             top: (ring2 - size) / 2,
             left: (ring2 - size) / 2,
-            background:
-              "linear-gradient(145deg, #1a5c3a 0%, #2a8f60 50%, #3db87f 100%)",
+            background: "linear-gradient(145deg, #1a5c3a 0%, #2a8f60 50%, #3db87f 100%)",
             boxShadow: glowStyle,
             animation: "avatar-breathe 4.2s ease-in-out infinite",
             transition: "box-shadow 0.6s ease",
@@ -141,18 +155,42 @@ export default function AIAvatar({ state, microReaction, size = 76 }: Props) {
 
       {/* ── Status label ── */}
       <div
-        className="text-center min-h-[3rem] flex flex-col items-center justify-center px-6 max-w-[280px]"
+        className="text-center min-h-[3.5rem] flex flex-col items-center justify-center gap-1.5 px-6 max-w-[300px]"
         key={labelKey}
         style={{ animation: "fade-slide-up 0.4s ease forwards" }}
       >
-        {state === "idle" && (
+        {/* Waveform bars — shown whenever voice is active */}
+        {showWaveform && (
+          <div className="flex items-end gap-[3px]" style={{ height: 18 }}>
+            {WAVE_BARS.map((h, i) => (
+              <div
+                key={i}
+                className="rounded-full"
+                style={{
+                  width: 3,
+                  height: `${h * 18}px`,
+                  background: GREEN,
+                  transformOrigin: "bottom",
+                  animation: `waveform 0.55s ease-in-out infinite ${i * 0.09}s alternate`,
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Text label — adapts to state */}
+        {displayState === "idle" && !showWaveform && (
           <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
             AI Academic Advisor
           </p>
         )}
 
-        {state === "thinking" && (
-          <div className="space-y-2.5 flex flex-col items-center">
+        {displayState === "idle" && showWaveform && (
+          <p className="text-xs italic text-muted-foreground">Speaking...</p>
+        )}
+
+        {displayState === "thinking" && (
+          <div className="space-y-2 flex flex-col items-center">
             <div className="flex items-center gap-1.5">
               {[0, 1, 2].map((i) => (
                 <span
@@ -171,7 +209,7 @@ export default function AIAvatar({ state, microReaction, size = 76 }: Props) {
           </div>
         )}
 
-        {state === "speaking" && (
+        {displayState === "speaking" && (
           <p
             className="text-sm font-semibold italic leading-snug"
             style={{
@@ -183,7 +221,7 @@ export default function AIAvatar({ state, microReaction, size = 76 }: Props) {
           </p>
         )}
 
-        {state === "result" && (
+        {displayState === "result" && (
           <p
             className="text-sm font-semibold leading-snug text-center"
             style={{ color: "#71151a" }}

@@ -4,13 +4,13 @@ import { getSession, saveSession, type StoredSession } from "@/lib/sessions";
 import { useInterviewTurn, type InterviewMessage } from "@workspace/api-client-react";
 import { Button } from "@heroui/react";
 import { Input } from "@heroui/react";
-import { Send, CheckCircle2 } from "lucide-react";
+import { Send, CheckCircle2, Volume2, VolumeX } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AIAvatar, { type AvatarState } from "@/components/AIAvatar";
+import { useSpeech } from "@/hooks/useSpeech";
 
 const EMOJI_RE = /[\u{1F1E0}-\u{1F1FF}\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu;
 const stripEmoji = (s: string) => s.replace(EMOJI_RE, "").replace(/\s+/g, " ").trim();
-
 const IS_AR = (s: string) => /[\u0600-\u06FF]/.test(s);
 
 const REACTIONS = [
@@ -29,8 +29,8 @@ function pickReaction(): string {
   return REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
 }
 
-function delay(ms: number) {
-  return new Promise<void>((res) => setTimeout(res, ms));
+function wait(ms: number) {
+  return new Promise<void>((r) => setTimeout(r, ms));
 }
 
 export default function Interview() {
@@ -46,6 +46,8 @@ export default function Interview() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
   const turnMutation = useInterviewTurn();
+
+  const { speak, cancel, isSpeaking, isMuted, toggleMute, isSupported } = useSpeech();
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -70,6 +72,11 @@ export default function Interview() {
     scrollToBottom();
   }, [session?.messages, avatarState]);
 
+  // Cancel speech when leaving page
+  useEffect(() => {
+    return () => cancel();
+  }, [cancel]);
+
   const runTurn = async (
     currentMessages: InterviewMessage[],
     s: StoredSession,
@@ -88,36 +95,46 @@ export default function Interview() {
       const newSession = { ...s };
 
       if (response.kind === "question" && response.question) {
-        // Show micro-reaction if student has answered something
+        const cleanQuestion = stripEmoji(response.question);
+
         if (hasStudentPrior) {
+          // 1. Show + speak micro-reaction
           const reaction = pickReaction();
           setMicroReaction(reaction);
           setAvatarState("speaking");
-          await delay(1400);
+          speak(reaction);
+          await wait(1400);
           setMicroReaction(null);
         } else {
-          // First greeting — quick speaking pulse
+          // First greeting — brief speaking flash
           setAvatarState("speaking");
-          await delay(600);
+          await wait(400);
         }
 
+        // 2. Add message to chat + speak it
         newSession.messages = [
           ...currentMessages,
-          { role: "advisor", content: stripEmoji(response.question) },
+          { role: "advisor", content: cleanQuestion },
         ];
         newSession.progress = response.progress;
         saveSession(newSession);
         setSession(newSession);
-        setAvatarState("idle");
+        setAvatarState("idle"); // voice active state keeps visuals alive
+
+        speak(cleanQuestion);
 
       } else if (response.kind === "result" && response.recommendation) {
         setAvatarState("result");
+        speak("Based on everything I've analyzed about you... here is your recommended academic path.");
+
         newSession.recommendation = response.recommendation;
         newSession.progress = response.progress;
         newSession.title = response.recommendation.recommendedMajor;
         saveSession(newSession);
         setSession(newSession);
-        await delay(1200);
+
+        await wait(1400);
+        cancel();
         setLocation(`/result/${newSession.id}`);
       }
     } catch (err: unknown) {
@@ -135,6 +152,8 @@ export default function Interview() {
     const cleaned = stripEmoji(input);
     if (!cleaned) return;
 
+    cancel(); // stop any current speech
+
     const newMessage: InterviewMessage = { role: "student", content: cleaned };
     const updatedMessages = [...session.messages, newMessage];
     const updatedSession = { ...session, messages: updatedMessages };
@@ -148,6 +167,7 @@ export default function Interview() {
 
   const handleForceFinalize = async () => {
     if (!session || avatarState === "thinking") return;
+    cancel();
     await runTurn(session.messages, session, true);
   };
 
@@ -166,7 +186,7 @@ export default function Interview() {
   return (
     <div className="flex flex-col h-[100dvh]" style={{ background: "var(--background)" }}>
 
-      {/* ── Top progress bar ── */}
+      {/* ── Progress header ── */}
       <header
         className="flex-none px-4 py-3 border-b border-[--border] z-10"
         style={{
@@ -175,7 +195,7 @@ export default function Interview() {
           WebkitBackdropFilter: "blur(12px)",
         }}
       >
-        <div className="max-w-2xl mx-auto flex items-center gap-4">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
           <div className="flex-1 min-w-0 space-y-1.5">
             <div className="flex justify-between items-center text-xs text-muted-foreground">
               <span className="font-medium">{session.progress?.stage || "Getting started"}</span>
@@ -200,10 +220,7 @@ export default function Interview() {
             >
               <div
                 className="h-full rounded-full transition-all duration-700"
-                style={{
-                  width: `${progress}%`,
-                  background: "linear-gradient(90deg, #84e4a8, #3db87f)",
-                }}
+                style={{ width: `${progress}%`, background: "linear-gradient(90deg, #84e4a8, #3db87f)" }}
               />
             </div>
           </div>
@@ -212,12 +229,36 @@ export default function Interview() {
 
       {/* ── Avatar panel ── */}
       <div
-        className="flex-none flex justify-center border-b border-[--border]"
-        style={{
-          background: "color-mix(in oklab, #84e4a8 4%, var(--background))",
-        }}
+        className="flex-none flex flex-col items-center border-b border-[--border] pt-4 pb-3"
+        style={{ background: "color-mix(in oklab, #84e4a8 4%, var(--background))" }}
       >
-        <AIAvatar state={avatarState} microReaction={microReaction} size={72} />
+        <AIAvatar
+          state={avatarState}
+          microReaction={microReaction}
+          isVoiceActive={isSpeaking}
+          size={72}
+        />
+
+        {/* Mute toggle */}
+        {isSupported && (
+          <button
+            onClick={toggleMute}
+            className="mt-1 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:opacity-80"
+            style={{
+              background: isMuted
+                ? "color-mix(in oklab, #71151a 10%, transparent)"
+                : "color-mix(in oklab, #84e4a8 14%, transparent)",
+              color: isMuted ? "#71151a" : "var(--accent-foreground)",
+              border: `1px solid ${isMuted ? "#71151a30" : "#84e4a835"}`,
+            }}
+            title={isMuted ? "Voice is off — click to enable" : "Voice is on — click to mute"}
+          >
+            {isMuted
+              ? <><VolumeX className="w-3 h-3" /> Voice off</>
+              : <><Volume2 className="w-3 h-3" /> Voice on</>
+            }
+          </button>
+        )}
       </div>
 
       {/* ── Chat messages ── */}
@@ -271,12 +312,9 @@ export default function Interview() {
             );
           })}
 
-          {/* Thinking dots in chat — only when no micro-reaction is showing */}
+          {/* Thinking dots in chat */}
           {avatarState === "thinking" && (
-            <div
-              className="flex justify-start"
-              style={{ animation: "fade-slide-up 0.3s ease forwards" }}
-            >
+            <div className="flex justify-start" style={{ animation: "fade-slide-up 0.3s ease forwards" }}>
               <div
                 className="rounded-2xl rounded-tl-sm px-5 py-3.5 border border-[--border] flex items-center gap-1.5"
                 style={{ background: "var(--surface)", boxShadow: "var(--surface-shadow)" }}
@@ -304,7 +342,9 @@ export default function Interview() {
       >
         <div className="max-w-2xl mx-auto">
           <form onSubmit={handleSubmit} className="flex items-center gap-2">
-            <div className={`flex-1 transition-opacity duration-200 ${isBusy ? "opacity-50 pointer-events-none" : ""}`}>
+            <div
+              className={`flex-1 transition-opacity duration-200 ${isBusy ? "opacity-50 pointer-events-none" : ""}`}
+            >
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
