@@ -50,8 +50,14 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
       "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+      "react": path.resolve(import.meta.dirname, "node_modules/react"),
+      "react-dom": path.resolve(import.meta.dirname, "node_modules/react-dom"),
     },
-    dedupe: ["react", "react-dom"],
+    dedupe: ["react", "react-dom", "react-aria-components"],
+  },
+  optimizeDeps: {
+    include: ["@heroui/react", "react", "react-dom"],
+    force: false,
   },
   root: path.resolve(import.meta.dirname),
   build: {

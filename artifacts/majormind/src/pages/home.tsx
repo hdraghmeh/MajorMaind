@@ -1,49 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { getSessions, createSession, type StoredSession } from "@/lib/sessions";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button, Card, CardContent, Chip } from "@heroui/react";
 import Navbar from "@/components/Navbar";
 import logoUrl from "/logo.png";
 import { ArrowRight, Brain, MessageSquare, Award, BookOpen, TrendingUp, Users, ChevronDown } from "lucide-react";
-
-function useReveal() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { el.classList.add("visible"); obs.unobserve(el); } },
-      { threshold: 0.12 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-  return ref;
-}
-
-function Reveal({ children, className = "", delay = 0, left = false }: {
-  children: React.ReactNode; className?: string; delay?: number; left?: boolean;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.transitionDelay = `${delay}ms`;
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { el.classList.add("visible"); obs.unobserve(el); } },
-      { threshold: 0.1 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [delay]);
-  return (
-    <div ref={ref} className={`${left ? "reveal-left" : "reveal"} ${className}`}>
-      {children}
-    </div>
-  );
-}
 
 const STEPS = [
   {
@@ -96,6 +57,39 @@ const STATS = [
   { value: "Free", label: "Always, no credit card" },
 ];
 
+function Reveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transitionDelay = `${delay}ms`;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.classList.add("visible");
+          obs.unobserve(el);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [delay]);
+  return (
+    <div ref={ref} className={`reveal ${className}`}>
+      {children}
+    </div>
+  );
+}
+
 export default function Home() {
   const [, setLocation] = useLocation();
   const [sessions, setSessions] = useState<StoredSession[]>([]);
@@ -129,15 +123,15 @@ export default function Home() {
         {/* Animated background orbs */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
           <div
-            className="animate-orb-drift absolute top-1/4 left-1/2 w-[640px] h-[640px] rounded-full opacity-[0.18]"
+            className="animate-orb-drift absolute top-1/4 left-1/2 w-[680px] h-[680px] rounded-full opacity-[0.16]"
             style={{ background: "radial-gradient(circle, #84e4a8 0%, transparent 68%)" }}
           />
           <div
-            className="animate-orb-drift-2 absolute bottom-1/4 right-1/4 w-[380px] h-[380px] rounded-full opacity-[0.12]"
+            className="animate-orb-drift-2 absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full opacity-[0.10]"
             style={{ background: "radial-gradient(circle, #71151a 0%, transparent 68%)" }}
           />
           <div
-            className="animate-orb-drift-2 absolute top-2/3 left-1/6 w-[200px] h-[200px] rounded-full opacity-[0.08]"
+            className="animate-orb-drift-2 absolute top-2/3 left-[15%] w-[220px] h-[220px] rounded-full opacity-[0.08]"
             style={{ background: "radial-gradient(circle, #84e4a8 0%, transparent 70%)", animationDelay: "4s" }}
           />
         </div>
@@ -151,10 +145,11 @@ export default function Home() {
           />
 
           <div className="space-y-5 animate-in fade-in slide-in-from-bottom-6 duration-700">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary-foreground text-sm font-medium">
+            {/* Live badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[--accent]/40 bg-[--accent]/10 text-sm font-medium" style={{ color: "var(--accent-foreground)" }}>
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: "var(--accent)" }} />
+                <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "var(--accent)" }} />
               </span>
               AI Academic Advisor for Tawjihi Students
             </div>
@@ -172,15 +167,9 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
             <Button
-              onClick={handleStart}
+              onPress={handleStart}
               size="lg"
-              className="px-8 py-6 text-lg rounded-full font-semibold group relative overflow-hidden"
-              style={{
-                background: "linear-gradient(90deg, #84e4a8, #3db87f, #84e4a8)",
-                backgroundSize: "200% auto",
-                animation: "shimmer 2.5s linear infinite",
-                color: "#1a4a2e",
-              }}
+              className="btn-shimmer px-8 py-6 text-lg rounded-full group"
             >
               Start your free interview
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-200" />
@@ -188,8 +177,8 @@ export default function Home() {
             <Button
               variant="outline"
               size="lg"
-              onClick={scrollToHow}
-              className="px-8 py-6 text-lg rounded-full hover:bg-accent/60 transition-all duration-300"
+              onPress={scrollToHow}
+              className="px-8 py-6 text-lg rounded-full"
             >
               How it works
             </Button>
@@ -218,11 +207,11 @@ export default function Home() {
       </section>
 
       {/* ── Stats bar ── */}
-      <section className="border-y border-border/50 bg-accent/30">
+      <section className="border-y border-[--border] bg-[--surface-secondary]">
         <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
           {STATS.map((stat, i) => (
             <Reveal key={stat.label} delay={i * 80} className="text-center space-y-1">
-              <div className="text-3xl md:text-4xl font-serif text-destructive">{stat.value}</div>
+              <div className="text-3xl md:text-4xl font-serif" style={{ color: "#71151a" }}>{stat.value}</div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
             </Reveal>
           ))}
@@ -232,52 +221,73 @@ export default function Home() {
       {/* ── How it works ── */}
       <section id="how-it-works" className="max-w-6xl mx-auto px-6 py-24 space-y-16">
         <Reveal className="text-center space-y-4">
-          <h2 className="text-4xl md:text-5xl font-serif text-destructive">How it works</h2>
+          <h2 className="text-4xl md:text-5xl font-serif" style={{ color: "#71151a" }}>How it works</h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
             Three simple steps from "I don't know what to study" to a clear, data-backed direction.
           </p>
         </Reveal>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-6">
           {STEPS.map((step, i) => (
             <Reveal key={step.number} delay={i * 120}>
-              <div className="group h-full space-y-5 p-8 rounded-2xl border border-border/60 bg-card hover:border-primary/50 hover:shadow-lg hover:-translate-y-1.5 transition-all duration-300 cursor-default">
-                <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                    <step.icon className="w-6 h-6 text-primary-foreground" />
+              <Card
+                className="h-full group hover:-translate-y-2 transition-all duration-300 cursor-default"
+                style={{ boxShadow: "var(--surface-shadow)" }}
+              >
+                <CardContent className="p-8 space-y-5">
+                  <div className="flex items-center justify-between">
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+                      style={{ background: "color-mix(in oklab, var(--accent) 15%, transparent)" }}
+                    >
+                      <step.icon className="w-6 h-6" style={{ color: "var(--accent-foreground)" }} />
+                    </div>
+                    <span
+                      className="text-4xl font-serif opacity-20 group-hover:opacity-40 transition-opacity duration-300"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      {step.number}
+                    </span>
                   </div>
-                  <span className="text-4xl font-serif text-border group-hover:text-primary/40 transition-colors duration-300">{step.number}</span>
-                </div>
-                <h3 className="text-xl font-serif text-foreground">{step.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{step.desc}</p>
-              </div>
+                  <h3 className="text-xl font-serif" style={{ color: "#71151a" }}>{step.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{step.desc}</p>
+                </CardContent>
+              </Card>
             </Reveal>
           ))}
         </div>
       </section>
 
       {/* ── Why MajorMind ── */}
-      <section className="bg-accent/20 border-y border-border/40">
+      <section className="border-y border-[--border]" style={{ background: "var(--surface-secondary)" }}>
         <div className="max-w-6xl mx-auto px-6 py-24 space-y-16">
           <Reveal className="text-center space-y-4">
-            <h2 className="text-4xl md:text-5xl font-serif text-destructive">Why MajorMind</h2>
+            <h2 className="text-4xl md:text-5xl font-serif" style={{ color: "#71151a" }}>Why MajorMind</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
               Built from the ground up for students navigating the most important decision of their academic life.
             </p>
           </Reveal>
 
-          <div className="grid sm:grid-cols-2 gap-6">
+          <div className="grid sm:grid-cols-2 gap-5">
             {FEATURES.map((feat, i) => (
               <Reveal key={feat.title} delay={i * 100}>
-                <div className="flex gap-5 p-8 rounded-2xl bg-background border border-border/50 hover:border-primary/40 hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-default">
-                  <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 mt-0.5 hover:bg-primary/20 transition-colors">
-                    <feat.icon className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-serif text-foreground">{feat.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{feat.desc}</p>
-                  </div>
-                </div>
+                <Card
+                  className="group hover:-translate-y-1.5 transition-all duration-300 cursor-default h-full"
+                  style={{ boxShadow: "var(--surface-shadow)" }}
+                >
+                  <CardContent className="p-7 flex gap-5">
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform duration-300"
+                      style={{ background: "color-mix(in oklab, var(--accent) 15%, transparent)" }}
+                    >
+                      <feat.icon className="w-5 h-5" style={{ color: "var(--accent-foreground)" }} />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-serif" style={{ color: "#71151a" }}>{feat.title}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{feat.desc}</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </Reveal>
             ))}
           </div>
@@ -289,33 +299,31 @@ export default function Home() {
         <Reveal>
           <div
             className="relative rounded-3xl overflow-hidden text-center px-8 py-20 space-y-8"
-            style={{ background: "linear-gradient(135deg, hsl(var(--destructive)) 0%, hsl(356deg 68% 18%) 100%)" }}
+            style={{ background: "linear-gradient(135deg, #71151a 0%, #5a1015 100%)" }}
           >
             <div className="absolute inset-0 pointer-events-none" aria-hidden>
               <div
-                className="animate-orb-drift-2 absolute top-0 right-0 w-80 h-80 rounded-full opacity-[0.12]"
+                className="animate-orb-drift-2 absolute top-0 right-0 w-80 h-80 rounded-full opacity-[0.15]"
                 style={{ background: "radial-gradient(circle, #84e4a8 0%, transparent 70%)" }}
               />
               <div
-                className="animate-orb-drift absolute bottom-0 left-0 w-60 h-60 rounded-full opacity-[0.08]"
+                className="animate-orb-drift absolute bottom-0 left-0 w-60 h-60 rounded-full opacity-[0.10]"
                 style={{ background: "radial-gradient(circle, #84e4a8 0%, transparent 70%)", animationDelay: "2s" }}
               />
             </div>
             <div className="relative space-y-4">
-              <h2 className="text-4xl md:text-5xl font-serif text-white">Your future starts with one conversation.</h2>
-              <p className="text-xl text-white/70 max-w-xl mx-auto font-light">It takes less than three minutes. No signup, no cost, no pressure.</p>
+              <h2 className="text-4xl md:text-5xl font-serif text-white" style={{ color: "white" }}>
+                Your future starts with one conversation.
+              </h2>
+              <p className="text-xl font-light max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.72)" }}>
+                It takes less than three minutes. No signup, no cost, no pressure.
+              </p>
             </div>
             <div className="relative">
               <Button
-                onClick={handleStart}
+                onPress={handleStart}
                 size="lg"
-                className="px-10 py-6 text-lg rounded-full font-semibold group"
-                style={{
-                  background: "linear-gradient(90deg, #84e4a8, #3db87f, #84e4a8)",
-                  backgroundSize: "200% auto",
-                  animation: "shimmer 2.5s linear infinite",
-                  color: "#1a4a2e",
-                }}
+                className="btn-shimmer px-10 py-6 text-lg rounded-full group"
               >
                 Begin your interview now
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-200" />
@@ -329,7 +337,7 @@ export default function Home() {
       {sessions.length > 0 && (
         <section id="sessions" className="max-w-6xl mx-auto px-6 pb-24 space-y-8">
           <Reveal>
-            <h2 className="text-3xl font-serif text-destructive">Your previous sessions</h2>
+            <h2 className="text-3xl font-serif" style={{ color: "#71151a" }}>Your previous sessions</h2>
           </Reveal>
           <div className="grid sm:grid-cols-2 gap-4">
             {sessions.map((session, i) => {
@@ -337,7 +345,10 @@ export default function Home() {
               return (
                 <Reveal key={session.id} delay={i * 80}>
                   <Link href={isComplete ? `/result/${session.id}` : `/interview/${session.id}`} className="block group">
-                    <Card className="hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                    <Card
+                      className="hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                      style={{ boxShadow: "var(--surface-shadow)" }}
+                    >
                       <CardContent className="p-5 flex items-center justify-between gap-4">
                         <div className="space-y-1 min-w-0">
                           <p className="font-medium text-foreground truncate">
@@ -346,9 +357,13 @@ export default function Home() {
                           <p className="text-sm text-muted-foreground">{new Date(session.updatedAt).toLocaleString()}</p>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
-                          <Badge variant={isComplete ? "default" : "secondary"}>
+                          <Chip
+                            color={isComplete ? "success" : "default"}
+                            variant="soft"
+                            size="sm"
+                          >
                             {isComplete ? "Complete" : "In Progress"}
-                          </Badge>
+                          </Chip>
                           <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
                         </div>
                       </CardContent>
@@ -362,12 +377,12 @@ export default function Home() {
       )}
 
       {/* ── Footer ── */}
-      <footer className="border-t border-border/50 bg-accent/20">
+      <footer className="border-t border-[--border]" style={{ background: "var(--surface-secondary)" }}>
         <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <img src={logoUrl} alt="MajorMind" className="h-10 w-auto object-contain" />
             <div>
-              <p className="font-serif text-foreground text-sm font-semibold">Think smarter about your future.</p>
+              <p className="font-serif text-sm font-semibold" style={{ color: "#71151a" }}>Think smarter about your future.</p>
               <p className="text-xs text-muted-foreground">AI Academic System</p>
             </div>
           </div>

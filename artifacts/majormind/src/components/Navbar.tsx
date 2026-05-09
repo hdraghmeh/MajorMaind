@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
+import { Button } from "@heroui/react";
 import { createSession } from "@/lib/sessions";
 import logoUrl from "/logo.png";
 
@@ -19,11 +19,11 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 border-b border-border/40"
+      className="fixed top-0 left-0 right-0 z-50 border-b border-[--border]"
       style={{
-        background: "hsl(var(--background) / 0.85)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
+        background: "color-mix(in oklab, var(--background) 85%, transparent)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
       }}
     >
       <div className="max-w-6xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
@@ -34,14 +34,24 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
           <img src={logoUrl} alt="MajorMind" className="h-10 w-auto object-contain" />
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {!isHome && (
-            <Button variant="ghost" size="sm" onClick={() => setLocation("/")} className="text-muted-foreground">
+            <Button
+              variant="ghost"
+              size="sm"
+              onPress={() => setLocation("/")}
+              className="text-[--muted] hover:text-[--foreground]"
+            >
               Home
             </Button>
           )}
           {variant === "landing" && (
-            <Button onClick={handleStart} size="sm" className="rounded-full px-5">
+            <Button
+              variant="primary"
+              size="sm"
+              onPress={handleStart}
+              className="rounded-full px-5 font-medium"
+            >
               Start Free Interview
             </Button>
           )}

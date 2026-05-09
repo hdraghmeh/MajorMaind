@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { getSession, createSession, type StoredSession } from "@/lib/sessions";
-import { Button } from "@/components/ui/button";
+import { Button, Card, CardContent, CardHeader, CardTitle, Chip } from "@heroui/react";
 import { ArrowLeft, Copy, Download, GraduationCap, Lightbulb, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import logoUrl from "/logo.png";
@@ -34,12 +34,15 @@ function AnimatedBar({ value, delay = 0 }: { value: number; delay?: number }) {
     return () => clearTimeout(t);
   }, [value, delay]);
   return (
-    <div className="h-1.5 rounded-full bg-border overflow-hidden">
+    <div
+      className="h-1.5 rounded-full overflow-hidden"
+      style={{ background: "color-mix(in oklab, var(--accent) 20%, transparent)" }}
+    >
       <div
         className="h-full rounded-full"
         style={{
           width: `${width}%`,
-          background: "linear-gradient(90deg, #84e4a8, #2d9b6b)",
+          background: "linear-gradient(90deg, var(--accent), color-mix(in oklab, var(--accent) 80%, white))",
           transition: "width 0.9s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       />
@@ -79,7 +82,7 @@ export default function Result() {
     if (!s) { setLocation("/"); return; }
     if (!s.recommendation) { setLocation(`/interview/${s.id}`); return; }
     setSession(s);
-  }, [params?.sessionId, setLocation]);
+  }, [params?.sessionId]);
 
   const countedScore = useCountUp(session?.recommendation?.matchScore ?? 0, 1400);
 
@@ -118,65 +121,95 @@ export default function Result() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background selection:bg-primary/30">
+    <div className="min-h-[100dvh] bg-background selection:bg-[--accent]/30">
+
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-sm">
+      <header
+        className="sticky top-0 z-10 border-b border-[--border]"
+        style={{
+          background: "color-mix(in oklab, var(--background) 90%, transparent)",
+          backdropFilter: "blur(14px)",
+          WebkitBackdropFilter: "blur(14px)",
+        }}
+      >
         <div className="max-w-3xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setLocation("/")} className="text-muted-foreground hover:text-foreground -ml-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onPress={() => setLocation("/")}
+              className="text-muted-foreground hover:text-foreground -ml-2"
+            >
               <ArrowLeft className="w-4 h-4 mr-1.5" /> Home
             </Button>
-            <img src={logoUrl} alt="MajorMind" className="h-7 w-auto object-contain hidden sm:block opacity-80" />
+            <img src={logoUrl} alt="MajorMind" className="h-7 w-auto object-contain hidden sm:block opacity-70" />
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleCopy}>
-              <Copy className="w-3.5 h-3.5 sm:mr-1.5" /><span className="hidden sm:inline">Copy</span>
+            <Button variant="outline" size="sm" onPress={handleCopy}>
+              <Copy className="w-3.5 h-3.5 sm:mr-1.5" />
+              <span className="hidden sm:inline">Copy</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={handleDownload}>
-              <Download className="w-3.5 h-3.5 sm:mr-1.5" /><span className="hidden sm:inline">Export</span>
+            <Button variant="outline" size="sm" onPress={handleDownload}>
+              <Download className="w-3.5 h-3.5 sm:mr-1.5" />
+              <span className="hidden sm:inline">Export</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 md:px-6 pb-24 pt-10 space-y-8">
+      <main className="max-w-3xl mx-auto px-4 md:px-6 pb-24 pt-10 space-y-6">
 
-        {/* Page title */}
+        {/* Title badge */}
         <FadeIn delay={0} className="text-center space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary-foreground text-xs font-medium">
+          <div
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border"
+            style={{
+              background: "color-mix(in oklab, var(--accent) 12%, transparent)",
+              borderColor: "color-mix(in oklab, var(--accent) 30%, transparent)",
+              color: "var(--accent-foreground)",
+            }}
+          >
             <Sparkles className="w-3.5 h-3.5" />
             Your AI-powered result
           </div>
-          <h1 className="text-3xl md:text-4xl font-serif text-foreground">Recommended Major</h1>
+          <h1 className="text-3xl md:text-4xl font-serif text-foreground" style={{ color: "#71151a" }}>
+            Recommended Major
+          </h1>
         </FadeIn>
 
         {/* Hero match card */}
         <FadeIn delay={150}>
           <div
             className="relative rounded-2xl p-6 md:p-8 overflow-hidden"
-            style={{ background: "linear-gradient(135deg, #1a6b4a 0%, #2d9b6b 50%, #3db87f 100%)" }}
+            style={{ background: "linear-gradient(135deg, #1a5c3a 0%, #2d9b6b 55%, #3db87f 100%)" }}
           >
             <div
-              className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10"
+              className="absolute top-0 right-0 w-56 h-56 rounded-full opacity-[0.12]"
               style={{ background: "radial-gradient(circle, #fff 0%, transparent 70%)", transform: "translate(30%, -30%)" }}
             />
             <div className="relative flex items-start justify-between gap-4">
               <div className="space-y-2 flex-1 min-w-0">
-                <p className="text-white/60 text-xs font-medium tracking-widest uppercase">Top Match</p>
-                <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight" style={{ direction: IS_AR(r.recommendedMajor) ? "rtl" : "ltr" }}>
+                <p className="text-white/60 text-xs font-semibold tracking-widest uppercase">Top Match</p>
+                <h2
+                  className="text-2xl md:text-3xl font-bold text-white leading-tight"
+                  style={{ direction: IS_AR(r.recommendedMajor) ? "rtl" : "ltr", color: "white" }}
+                >
                   {CLEAN(r.recommendedMajor)}
                 </h2>
                 {r.whyItFits[0] && (
-                  <p className="text-white/70 text-sm leading-relaxed" style={{ direction: IS_AR(r.whyItFits[0]) ? "rtl" : "ltr" }}>
+                  <p
+                    className="text-sm leading-relaxed"
+                    style={{ color: "rgba(255,255,255,0.72)", direction: IS_AR(r.whyItFits[0]) ? "rtl" : "ltr" }}
+                  >
                     {CLEAN(r.whyItFits[0])}
                   </p>
                 )}
               </div>
               <div className="shrink-0 text-right">
-                <div className="text-5xl md:text-6xl font-bold text-white leading-none tabular-nums">
-                  {countedScore}<span className="text-2xl text-white/70">%</span>
+                <div className="text-5xl md:text-6xl font-bold leading-none tabular-nums" style={{ color: "white" }}>
+                  {countedScore}<span className="text-2xl" style={{ color: "rgba(255,255,255,0.65)" }}>%</span>
                 </div>
-                <p className="text-white/60 text-xs mt-1">Match score</p>
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>Match score</p>
               </div>
             </div>
           </div>
@@ -186,34 +219,46 @@ export default function Result() {
         <div className="grid md:grid-cols-2 gap-4">
           {/* Why this major */}
           <FadeIn delay={300} className="h-full">
-            <div className="h-full bg-card border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/30 hover:shadow-sm transition-all duration-300">
-              <div className="flex items-center gap-2 text-foreground font-medium">
-                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <GraduationCap className="w-4 h-4 text-primary-foreground" />
-                </div>
-                Why this major?
-              </div>
-              <ul className="space-y-2.5">
-                {r.whyItFits.slice(1).map((reason, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground leading-relaxed">
-                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                    <span style={{ direction: IS_AR(reason) ? "rtl" : "ltr" }}>{CLEAN(reason)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <Card className="h-full" style={{ boxShadow: "var(--surface-shadow)" }}>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-base font-medium" style={{ color: "#71151a" }}>
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    style={{ background: "color-mix(in oklab, var(--accent) 15%, transparent)" }}
+                  >
+                    <GraduationCap className="w-4 h-4" style={{ color: "var(--accent-foreground)" }} />
+                  </div>
+                  Why this major?
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <ul className="space-y-2.5">
+                  {r.whyItFits.slice(1).map((reason, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground leading-relaxed">
+                      <div className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "var(--accent)" }} />
+                      <span style={{ direction: IS_AR(reason) ? "rtl" : "ltr" }}>{CLEAN(reason)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           </FadeIn>
 
           {/* Advice + strengths */}
           <FadeIn delay={400} className="h-full">
-            <div className="h-full bg-card border border-border/60 rounded-2xl p-6 space-y-5 hover:border-primary/30 hover:shadow-sm transition-all duration-300">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-foreground font-medium">
-                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Lightbulb className="w-4 h-4 text-primary-foreground" />
+            <Card className="h-full" style={{ boxShadow: "var(--surface-shadow)" }}>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-base font-medium" style={{ color: "#71151a" }}>
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    style={{ background: "color-mix(in oklab, var(--accent) 15%, transparent)" }}
+                  >
+                    <Lightbulb className="w-4 h-4" style={{ color: "var(--accent-foreground)" }} />
                   </div>
                   Advice for you
-                </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-5">
                 <ul className="space-y-2">
                   {r.careerAdvice.slice(0, 3).map((advice, i) => (
                     <li key={i} className="text-sm text-muted-foreground leading-relaxed" style={{ direction: IS_AR(advice) ? "rtl" : "ltr" }}>
@@ -221,78 +266,110 @@ export default function Result() {
                     </li>
                   ))}
                 </ul>
-              </div>
 
-              <div className="border-t border-border/50 pt-4 space-y-3">
-                <div className="flex items-center gap-2 text-foreground font-medium text-sm">
-                  <TrendingUp className="w-4 h-4 text-primary-foreground" />
-                  Academic strengths
+                <div
+                  className="border-t pt-4 space-y-3"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <div className="flex items-center gap-2 text-sm font-medium" style={{ color: "#71151a" }}>
+                    <TrendingUp className="w-4 h-4" style={{ color: "var(--accent-foreground)" }} />
+                    Academic strengths
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {r.academicStrengths.map((s, i) => (
+                      <Chip
+                        key={i}
+                        color="success"
+                        variant="soft"
+                        size="sm"
+                        style={{ direction: IS_AR(s) ? "rtl" : "ltr" }}
+                      >
+                        {CLEAN(s)}
+                      </Chip>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {r.academicStrengths.map((s, i) => (
-                    <span
-                      key={i}
-                      className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary-foreground border border-primary/20"
-                      style={{ direction: IS_AR(s) ? "rtl" : "ltr" }}
-                    >
-                      {CLEAN(s)}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </FadeIn>
         </div>
 
         {/* Alternative majors */}
         <FadeIn delay={550} className="space-y-4">
-          <div className="flex items-center gap-2 text-foreground font-medium">
-            <GraduationCap className="w-5 h-5 text-primary-foreground" />
+          <div className="flex items-center gap-2 font-medium" style={{ color: "#71151a" }}>
+            <GraduationCap className="w-5 h-5" style={{ color: "var(--accent-foreground)" }} />
             Alternative majors
           </div>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
             {r.alternativeMajors.map((major, i) => (
-              <div
+              <Card
                 key={i}
-                className="bg-card border border-border/60 rounded-xl p-4 space-y-3 hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-default"
+                className="hover:-translate-y-0.5 transition-all duration-300 cursor-default"
+                style={{ boxShadow: "var(--surface-shadow)" }}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <span className="font-medium text-sm text-foreground leading-snug" style={{ direction: IS_AR(major) ? "rtl" : "ltr" }}>
-                    {CLEAN(major)}
-                  </span>
-                  <span className="text-sm font-bold shrink-0" style={{ color: "#2d9b6b" }}>
-                    {altScores[i]}%
-                  </span>
-                </div>
-                <AnimatedBar value={altScores[i]} delay={600 + i * 120} />
-              </div>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <span
+                      className="font-medium text-sm leading-snug text-foreground"
+                      style={{ direction: IS_AR(major) ? "rtl" : "ltr" }}
+                    >
+                      {CLEAN(major)}
+                    </span>
+                    <span
+                      className="text-sm font-bold shrink-0"
+                      style={{ color: "var(--accent-foreground)" }}
+                    >
+                      {altScores[i]}%
+                    </span>
+                  </div>
+                  <AnimatedBar value={altScores[i]} delay={600 + i * 120} />
+                </CardContent>
+              </Card>
             ))}
           </div>
         </FadeIn>
 
         {/* Closing note */}
         <FadeIn delay={700}>
-          <div className="bg-primary/5 border border-primary/15 rounded-2xl p-6 space-y-2">
-            <p className="text-xs font-medium text-primary-foreground uppercase tracking-wider">Advisor's note</p>
-            <p
-              className="text-muted-foreground leading-relaxed italic"
-              style={{ direction: IS_AR(r.closingMessage) ? "rtl" : "ltr" }}
+          <Card style={{ boxShadow: "var(--surface-shadow)" }}>
+            <CardContent
+              className="p-6 space-y-2 rounded-2xl"
+              style={{
+                background: "color-mix(in oklab, var(--accent) 6%, var(--surface))",
+                border: "1px solid color-mix(in oklab, var(--accent) 20%, transparent)",
+              }}
             >
-              "{CLEAN(r.closingMessage)}"
-            </p>
-          </div>
+              <p
+                className="text-xs font-semibold uppercase tracking-wider"
+                style={{ color: "var(--accent-foreground)" }}
+              >
+                Advisor's note
+              </p>
+              <p
+                className="text-muted-foreground leading-relaxed italic"
+                style={{ direction: IS_AR(r.closingMessage) ? "rtl" : "ltr" }}
+              >
+                "{CLEAN(r.closingMessage)}"
+              </p>
+            </CardContent>
+          </Card>
         </FadeIn>
 
         {/* Actions */}
         <FadeIn delay={800} className="flex flex-col sm:flex-row gap-3 pt-2">
           <Button
-            onClick={() => { const s = createSession(); setLocation(`/interview/${s.id}`); }}
+            onPress={() => { const s = createSession(); setLocation(`/interview/${s.id}`); }}
+            variant="primary"
             className="flex-1 py-5 rounded-xl font-medium group"
           >
             <RefreshCw className="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
             Start new interview
           </Button>
-          <Button variant="outline" onClick={() => window.print()} className="py-5 rounded-xl">
+          <Button
+            variant="outline"
+            onPress={() => window.print()}
+            className="py-5 rounded-xl"
+          >
             Print results
           </Button>
         </FadeIn>
