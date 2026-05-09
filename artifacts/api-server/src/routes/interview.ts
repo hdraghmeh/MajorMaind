@@ -88,6 +88,7 @@ const RESPONSE_SCHEMA = {
             "academicStrengths",
             "careerAdvice",
             "closingMessage",
+            "admissionNote",
           ],
         },
       ],
