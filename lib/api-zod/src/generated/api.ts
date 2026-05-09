@@ -14,3 +14,69 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * Submits the full transcript so far (messages between the student and the AI advisor)
+and returns either the next AI question or the final recommendation.
+
+ * @summary Advance the AI interview by one turn
+ */
+export const InterviewTurnBody = zod.object({
+  messages: zod
+    .array(
+      zod.object({
+        role: zod.enum(["student", "advisor"]),
+        content: zod.string(),
+      }),
+    )
+    .describe("The full transcript of the interview so far, oldest first."),
+  forceFinalize: zod
+    .boolean()
+    .optional()
+    .describe(
+      "When true, instructs the advisor to produce a final recommendation now.",
+    ),
+});
+
+export const interviewTurnResponseProgressPercentMin = 0;
+export const interviewTurnResponseProgressPercentMax = 100;
+
+export const interviewTurnResponseRecommendationOneMatchScoreMin = 0;
+export const interviewTurnResponseRecommendationOneMatchScoreMax = 100;
+
+export const InterviewTurnResponse = zod.object({
+  kind: zod.enum(["question", "result"]),
+  question: zod
+    .string()
+    .nullish()
+    .describe(
+      "The next AI question for the student. Present when kind=question.",
+    ),
+  progress: zod
+    .object({
+      percent: zod
+        .number()
+        .min(interviewTurnResponseProgressPercentMin)
+        .max(interviewTurnResponseProgressPercentMax),
+      stage: zod.string().describe("A short human-readable stage label."),
+    })
+    .describe("Subtle, non-checklist progress signal (0-100)."),
+  recommendation: zod
+    .union([
+      zod.object({
+        recommendedMajor: zod.string(),
+        matchScore: zod
+          .number()
+          .min(interviewTurnResponseRecommendationOneMatchScoreMin)
+          .max(interviewTurnResponseRecommendationOneMatchScoreMax),
+        whyItFits: zod.array(zod.string()),
+        alternativeMajors: zod.array(zod.string()),
+        academicStrengths: zod.array(zod.string()),
+        careerAdvice: zod.array(zod.string()),
+        closingMessage: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional()
+    .describe("Final recommendation. Present when kind=result."),
+});

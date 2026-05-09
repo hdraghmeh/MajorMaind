@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: interview
+    description: MajorMind AI interview operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /interview/turn:
+    post:
+      operationId: interviewTurn
+      tags: [interview]
+      summary: Advance the AI interview by one turn
+      description: |
+        Submits the full transcript so far (messages between the student and the AI advisor)
+        and returns either the next AI question or the final recommendation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterviewTurnInput"
+      responses:
+        "200":
+          description: The next interview turn
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewTurn"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewError"
+        "500":
+          description: AI service failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +68,102 @@ components:
           type: string
       required:
         - status
-
+    InterviewMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [student, advisor]
+        content:
+          type: string
+      required:
+        - role
+        - content
+    InterviewTurnInput:
+      type: object
+      properties:
+        messages:
+          type: array
+          description: The full transcript of the interview so far, oldest first.
+          items:
+            $ref: "#/components/schemas/InterviewMessage"
+        forceFinalize:
+          type: boolean
+          description: When true, instructs the advisor to produce a final recommendation now.
+      required:
+        - messages
+    InterviewProgress:
+      type: object
+      description: Subtle, non-checklist progress signal (0-100).
+      properties:
+        percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        stage:
+          type: string
+          description: A short human-readable stage label.
+      required:
+        - percent
+        - stage
+    InterviewRecommendation:
+      type: object
+      properties:
+        recommendedMajor:
+          type: string
+        matchScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        whyItFits:
+          type: array
+          items:
+            type: string
+        alternativeMajors:
+          type: array
+          items:
+            type: string
+        academicStrengths:
+          type: array
+          items:
+            type: string
+        careerAdvice:
+          type: array
+          items:
+            type: string
+        closingMessage:
+          type: string
+      required:
+        - recommendedMajor
+        - matchScore
+        - whyItFits
+        - alternativeMajors
+        - academicStrengths
+        - careerAdvice
+        - closingMessage
+    InterviewTurn:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum: [question, result]
+        question:
+          type: ["string", "null"]
+          description: The next AI question for the student. Present when kind=question.
+        progress:
+          $ref: "#/components/schemas/InterviewProgress"
+        recommendation:
+          oneOf:
+            - $ref: "#/components/schemas/InterviewRecommendation"
+            - type: "null"
+          description: Final recommendation. Present when kind=result.
+      required:
+        - kind
+        - progress
+    InterviewError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

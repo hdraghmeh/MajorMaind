@@ -8,3 +8,74 @@
 export interface HealthStatus {
   status: string;
 }
+
+export type InterviewMessageRole =
+  (typeof InterviewMessageRole)[keyof typeof InterviewMessageRole];
+
+export const InterviewMessageRole = {
+  student: "student",
+  advisor: "advisor",
+} as const;
+
+export interface InterviewMessage {
+  role: InterviewMessageRole;
+  content: string;
+}
+
+export interface InterviewTurnInput {
+  /** The full transcript of the interview so far, oldest first. */
+  messages: InterviewMessage[];
+  /** When true, instructs the advisor to produce a final recommendation now. */
+  forceFinalize?: boolean;
+}
+
+/**
+ * Subtle, non-checklist progress signal (0-100).
+ */
+export interface InterviewProgress {
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
+  percent: number;
+  /** A short human-readable stage label. */
+  stage: string;
+}
+
+export interface InterviewRecommendation {
+  recommendedMajor: string;
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
+  matchScore: number;
+  whyItFits: string[];
+  alternativeMajors: string[];
+  academicStrengths: string[];
+  careerAdvice: string[];
+  closingMessage: string;
+}
+
+export type InterviewTurnKind =
+  (typeof InterviewTurnKind)[keyof typeof InterviewTurnKind];
+
+export const InterviewTurnKind = {
+  question: "question",
+  result: "result",
+} as const;
+
+export interface InterviewTurn {
+  kind: InterviewTurnKind;
+  /**
+   * The next AI question for the student. Present when kind=question.
+   * @nullable
+   */
+  question?: string | null;
+  progress: InterviewProgress;
+  /** Final recommendation. Present when kind=result. */
+  recommendation?: InterviewRecommendation | null;
+}
+
+export interface InterviewError {
+  error: string;
+}

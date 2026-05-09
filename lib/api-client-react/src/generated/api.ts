@@ -5,18 +5,26 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  HealthStatus,
+  InterviewError,
+  InterviewTurn,
+  InterviewTurnInput,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +107,92 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * Submits the full transcript so far (messages between the student and the AI advisor)
+and returns either the next AI question or the final recommendation.
+
+ * @summary Advance the AI interview by one turn
+ */
+export const getInterviewTurnUrl = () => {
+  return `/api/interview/turn`;
+};
+
+export const interviewTurn = async (
+  interviewTurnInput: InterviewTurnInput,
+  options?: RequestInit,
+): Promise<InterviewTurn> => {
+  return customFetch<InterviewTurn>(getInterviewTurnUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(interviewTurnInput),
+  });
+};
+
+export const getInterviewTurnMutationOptions = <
+  TError = ErrorType<InterviewError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof interviewTurn>>,
+    TError,
+    { data: BodyType<InterviewTurnInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof interviewTurn>>,
+  TError,
+  { data: BodyType<InterviewTurnInput> },
+  TContext
+> => {
+  const mutationKey = ["interviewTurn"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof interviewTurn>>,
+    { data: BodyType<InterviewTurnInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return interviewTurn(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type InterviewTurnMutationResult = NonNullable<
+  Awaited<ReturnType<typeof interviewTurn>>
+>;
+export type InterviewTurnMutationBody = BodyType<InterviewTurnInput>;
+export type InterviewTurnMutationError = ErrorType<InterviewError>;
+
+/**
+ * @summary Advance the AI interview by one turn
+ */
+export const useInterviewTurn = <
+  TError = ErrorType<InterviewError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof interviewTurn>>,
+    TError,
+    { data: BodyType<InterviewTurnInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof interviewTurn>>,
+  TError,
+  { data: BodyType<InterviewTurnInput> },
+  TContext
+> => {
+  return useMutation(getInterviewTurnMutationOptions(options));
+};
