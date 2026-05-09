@@ -234,6 +234,9 @@ importers:
       '@heroui/styles':
         specifier: ^3.0.4
         version: 3.0.4(tailwind-merge@3.5.0)(tailwindcss@4.2.1)
+      react-aria-components:
+        specifier: ^1.17.0
+        version: 1.17.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
     devDependencies:
       '@hookform/resolvers':
         specifier: ^3.10.0
