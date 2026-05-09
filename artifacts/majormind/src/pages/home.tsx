@@ -443,7 +443,10 @@ export default function Home() {
               <p className="text-xs text-muted-foreground">AI Academic System</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground text-center">Built for Tawjihi students. Sign in to sync your sessions.</p>
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-muted-foreground text-center">Built for Tawjihi students. Sign in to sync your sessions.</p>
+            <Link href="/admin" className="text-xs text-muted-foreground opacity-30 hover:opacity-70 transition-opacity">Admin</Link>
+          </div>
         </div>
       </footer>
     </div>
