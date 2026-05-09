@@ -30,6 +30,40 @@ const CAREER_OPTIONS = [
   "Architecture", "Finance & Accounting", "Psychology & Social Work",
 ];
 
+const HOBBIES_OPTIONS = [
+  "البرمجة والتقنية", "القراءة والكتابة", "الرياضة واللياقة",
+  "الرسم والفنون", "الموسيقى", "الألعاب الإلكترونية",
+  "التصوير والفيديو", "الطبخ", "العمل التطوعي",
+  "الخطابة والنقاش", "الرياضيات والألغاز", "متابعة الأخبار والسياسة",
+  "السفر والاستكشاف", "تصميم الجرافيك", "الروبوتيكس",
+];
+
+const ASPIRATIONS_OPTIONS = [
+  "أبني مشروعاً خاصاً بي",
+  "أعمل في شركة أو مؤسسة كبرى",
+  "أخدم مجتمعي وبلدي",
+  "أطور الرعاية الطبية والصحية",
+  "أبني حلولاً تقنية تغير الواقع",
+  "أصبح باحثاً أو أكاديمياً",
+  "أعمل في القطاع الحكومي أو العام",
+  "أنتج محتوى إبداعياً أو فنياً",
+  "أعمل على المستوى الدولي",
+  "أحقق الاستقلال المالي والنجاح الشخصي",
+];
+
+const CONCERNS_OPTIONS = [
+  "لا أعرف أي تخصص يناسبني",
+  "قلق من سوق العمل وفرص التوظيف",
+  "خائف من صعوبة الدراسة الجامعية",
+  "أريد أن أوازن بين شغفي وقدراتي",
+  "قلق من التكاليف المادية للجامعة",
+  "ضغط من توقعات الأهل والعائلة",
+  "قلق من الابتعاد عن المنزل",
+  "لست متأكداً من نقاط قوتي الأكاديمية",
+  "المنافسة الشديدة في التخصصات المطلوبة",
+  "المستقبل غير واضح ولا أعرف من أين أبدأ",
+];
+
 const LEARNING_STYLES: { value: LearningStyle; label: string; desc: string }[] = [
   { value: "practical", label: "Practical", desc: "أتعلم بالتطبيق والتجربة" },
   { value: "visual", label: "Visual", desc: "أتعلم بالصور والمخططات" },
@@ -52,6 +86,39 @@ const STEPS = [
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-sm font-medium mb-2" style={{ color: "var(--foreground)" }}>{children}</p>;
+}
+
+function SelectDropdown({
+  value, onChange, options, placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  placeholder?: string;
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full appearance-none px-4 py-3 rounded-xl border border-[--border] text-sm outline-none transition-all pr-10"
+        style={{
+          background: "var(--surface)",
+          color: value ? "var(--foreground)" : "var(--muted-foreground)",
+        }}
+      >
+        <option value="" disabled>{placeholder ?? "اختر..."}</option>
+        {options.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
+      <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+        <svg className="w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+    </div>
+  );
 }
 
 function TextInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
@@ -111,7 +178,7 @@ export default function Profile() {
   const set = <K extends keyof StudentProfile>(key: K, value: StudentProfile[K]) =>
     setProfile((p) => ({ ...p, [key]: value }));
 
-  const toggleArray = (key: "favoriteSubjects" | "leastFavoriteSubjects" | "careerInterests", val: string) => {
+  const toggleArray = (key: "favoriteSubjects" | "leastFavoriteSubjects" | "careerInterests" | "hobbies", val: string) => {
     setProfile((p) => {
       const arr = p[key] as string[];
       return { ...p, [key]: arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val] };
@@ -304,38 +371,33 @@ export default function Profile() {
               </div>
 
               <div>
-                <FieldLabel>هواياتك واهتماماتك</FieldLabel>
-                <textarea
-                  value={profile.hobbies}
-                  onChange={(e) => set("hobbies", e.target.value)}
-                  placeholder="مثال: أحب البرمجة، أرسم، أمارس الرياضة، أقرأ في علم النفس..."
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-[--border] text-sm outline-none resize-none transition-all"
-                  style={{ background: "var(--surface)", color: "var(--foreground)" }}
-                />
+                <FieldLabel>هواياتك واهتماماتك (اختر ما ينطبق عليك)</FieldLabel>
+                <div className="flex flex-wrap gap-2">
+                  {HOBBIES_OPTIONS.map((h) => (
+                    <Chip key={h} label={h}
+                      selected={(profile.hobbies ?? []).includes(h)}
+                      onClick={() => toggleArray("hobbies", h)} />
+                  ))}
+                </div>
               </div>
 
               <div>
                 <FieldLabel>ما الذي تحلم بتحقيقه؟</FieldLabel>
-                <textarea
+                <SelectDropdown
                   value={profile.aspirations}
-                  onChange={(e) => set("aspirations", e.target.value)}
-                  placeholder="مثال: أريد أن أساهم في مجال التكنولوجيا في فلسطين..."
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-[--border] text-sm outline-none resize-none transition-all"
-                  style={{ background: "var(--surface)", color: "var(--foreground)" }}
+                  onChange={(v) => set("aspirations", v)}
+                  options={ASPIRATIONS_OPTIONS}
+                  placeholder="اختر ما يعبّر عن طموحك..."
                 />
               </div>
 
               <div>
-                <FieldLabel>ما مخاوفك حول مستقبلك الدراسي؟</FieldLabel>
-                <textarea
+                <FieldLabel>أكبر مخاوفك حول مستقبلك الدراسي</FieldLabel>
+                <SelectDropdown
                   value={profile.concerns}
-                  onChange={(e) => set("concerns", e.target.value)}
-                  placeholder="مثال: لا أعرف إذا كانت ميولي تتوافق مع قدراتي..."
-                  rows={2}
-                  className="w-full px-4 py-3 rounded-xl border border-[--border] text-sm outline-none resize-none transition-all"
-                  style={{ background: "var(--surface)", color: "var(--foreground)" }}
+                  onChange={(v) => set("concerns", v)}
+                  options={CONCERNS_OPTIONS}
+                  placeholder="اختر ما يعبّر عن مخاوفك..."
                 />
               </div>
 
@@ -348,6 +410,9 @@ export default function Profile() {
                   {profile.tawjihiStream && <p>الفرع: <span className="text-foreground font-medium">{STREAMS.find(s => s.value === profile.tawjihiStream)?.labelAr}</span></p>}
                   {profile.favoriteSubjects.length > 0 && <p>المواد المفضلة: <span className="text-foreground font-medium">{profile.favoriteSubjects.slice(0, 3).join("، ")}{profile.favoriteSubjects.length > 3 ? "..." : ""}</span></p>}
                   {profile.careerInterests.length > 0 && <p>الاهتمامات: <span className="text-foreground font-medium">{profile.careerInterests.slice(0, 2).join("، ")}{profile.careerInterests.length > 2 ? "..." : ""}</span></p>}
+                  {(profile.hobbies ?? []).length > 0 && <p>الهوايات: <span className="text-foreground font-medium">{profile.hobbies.slice(0, 2).join("، ")}{profile.hobbies.length > 2 ? "..." : ""}</span></p>}
+                  {profile.aspirations && <p>الطموح: <span className="text-foreground font-medium">{profile.aspirations}</span></p>}
+                  {profile.concerns && <p>المخاوف: <span className="text-foreground font-medium">{profile.concerns}</span></p>}
                 </div>
               </div>
             </div>

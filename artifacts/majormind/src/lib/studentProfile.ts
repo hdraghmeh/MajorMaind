@@ -15,7 +15,7 @@ export interface StudentProfile {
   learningStyle: LearningStyle | "";
   personality: PersonalityType | "";
   careerInterests: string[];
-  hobbies: string;
+  hobbies: string[];
   workPreference: "alone" | "team" | "both" | "";
   aspirations: string;
   concerns: string;
@@ -33,7 +33,7 @@ export const EMPTY_PROFILE: StudentProfile = {
   learningStyle: "",
   personality: "",
   careerInterests: [],
-  hobbies: "",
+  hobbies: [],
   workPreference: "",
   aspirations: "",
   concerns: "",
@@ -72,7 +72,7 @@ export function buildProfileContext(profile: StudentProfile): string {
   if (profile.learningStyle) lines.push(`Learning style: ${profile.learningStyle}`);
   if (profile.personality) lines.push(`Personality: ${profile.personality}`);
   if (profile.careerInterests.length) lines.push(`Career interests: ${profile.careerInterests.join(", ")}`);
-  if (profile.hobbies) lines.push(`Hobbies / passions: ${profile.hobbies}`);
+  if (profile.hobbies?.length) lines.push(`Hobbies / passions: ${profile.hobbies.join(", ")}`);
   if (profile.workPreference) lines.push(`Work preference: ${profile.workPreference}`);
   if (profile.aspirations) lines.push(`Long-term aspirations: ${profile.aspirations}`);
   if (profile.concerns) lines.push(`Main concerns about the future: ${profile.concerns}`);
