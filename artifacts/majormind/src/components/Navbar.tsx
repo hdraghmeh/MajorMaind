@@ -3,7 +3,7 @@ import { Button, Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem }
 import { createSession } from "@/lib/sessions";
 import { useAuth } from "@workspace/replit-auth-web";
 import logoUrl from "/logo.png";
-import { LogIn, LogOut, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 
 interface NavbarProps {
   variant?: "landing" | "app";
@@ -90,10 +90,9 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onPress={login}
+                onPress={() => setLocation("/login")}
                 className="rounded-full px-4 font-medium flex items-center gap-1.5"
               >
-                <LogIn className="w-4 h-4" />
                 Log in
               </Button>
             )

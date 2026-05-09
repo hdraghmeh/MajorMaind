@@ -207,10 +207,9 @@ export default function Home() {
           {!authLoading && !isAuthenticated && (
             <p className="text-sm text-muted-foreground animate-in fade-in duration-1000 delay-500">
               <button
-                onClick={login}
+                onClick={() => setLocation("/login")}
                 className="inline-flex items-center gap-1.5 underline underline-offset-2 hover:text-foreground transition-colors"
               >
-                <LogIn className="w-3.5 h-3.5" />
                 Sign in to save your sessions across devices
               </button>
             </p>
