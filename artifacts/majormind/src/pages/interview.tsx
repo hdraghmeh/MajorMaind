@@ -78,10 +78,12 @@ export default function Interview() {
       if (response.kind === "result") {
         setLocation(`/result/${newSession.id}`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const description =
+        err instanceof Error ? err.message : "Unable to reach the advisor. Please try again.";
       toast({
         title: "Connection Error",
-        description: err?.statusText || "Unable to reach the advisor. Please try again.",
+        description,
         variant: "destructive",
       });
     }

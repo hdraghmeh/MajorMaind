@@ -8,6 +8,7 @@
 
 export * from "./healthStatus";
 export * from "./interviewError";
+export * from "./interviewFinalizeInput";
 export * from "./interviewMessage";
 export * from "./interviewMessageRole";
 export * from "./interviewProgress";

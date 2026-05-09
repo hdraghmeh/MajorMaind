@@ -26,6 +26,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /interview/start:
+    post:
+      operationId: startInterview
+      tags: [interview]
+      summary: Start a new AI interview
+      description: |
+        Returns the AI advisor's opening greeting and first question. The client should
+        treat the returned turn as the first advisor message in a fresh transcript.
+      responses:
+        "200":
+          description: The opening interview turn
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewTurn"
+        "500":
+          description: AI service failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewError"
   /interview/turn:
     post:
       operationId: interviewTurn
@@ -43,6 +64,39 @@ paths:
       responses:
         "200":
           description: The next interview turn
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewTurn"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewError"
+        "500":
+          description: AI service failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewError"
+  /interview/finalize:
+    post:
+      operationId: finalizeInterview
+      tags: [interview]
+      summary: Force the AI to produce the final recommendation now
+      description: |
+        Submits the full transcript so far and asks the AI advisor to produce the final
+        recommendation immediately, regardless of whether it would normally have done so.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterviewFinalizeInput"
+      responses:
+        "200":
+          description: The final interview turn (kind=result)
           content:
             application/json:
               schema:
@@ -90,6 +144,16 @@ components:
         forceFinalize:
           type: boolean
           description: When true, instructs the advisor to produce a final recommendation now.
+      required:
+        - messages
+    InterviewFinalizeInput:
+      type: object
+      properties:
+        messages:
+          type: array
+          description: The full transcript of the interview so far, oldest first.
+          items:
+            $ref: "#/components/schemas/InterviewMessage"
       required:
         - messages
     InterviewProgress:

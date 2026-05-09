@@ -4,7 +4,7 @@ import { getSession, createSession, type StoredSession } from "@/lib/sessions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Copy, Download, RefreshCw } from "lucide-react";
+import { ArrowLeft, Copy, Download, Printer, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Result() {
@@ -88,6 +88,9 @@ ${recommendation.closingMessage}
           </Button>
           <Button variant="outline" size="sm" onClick={handleDownload}>
             <Download className="w-4 h-4 mr-2" /> Export
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <Printer className="w-4 h-4 mr-2" /> Print
           </Button>
         </div>
       </header>

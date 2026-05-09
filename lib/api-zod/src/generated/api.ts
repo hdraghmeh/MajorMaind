@@ -16,6 +16,55 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
+ * Returns the AI advisor's opening greeting and first question. The client should
+treat the returned turn as the first advisor message in a fresh transcript.
+
+ * @summary Start a new AI interview
+ */
+export const startInterviewResponseProgressPercentMin = 0;
+export const startInterviewResponseProgressPercentMax = 100;
+
+export const startInterviewResponseRecommendationOneMatchScoreMin = 0;
+export const startInterviewResponseRecommendationOneMatchScoreMax = 100;
+
+export const StartInterviewResponse = zod.object({
+  kind: zod.enum(["question", "result"]),
+  question: zod
+    .string()
+    .nullish()
+    .describe(
+      "The next AI question for the student. Present when kind=question.",
+    ),
+  progress: zod
+    .object({
+      percent: zod
+        .number()
+        .min(startInterviewResponseProgressPercentMin)
+        .max(startInterviewResponseProgressPercentMax),
+      stage: zod.string().describe("A short human-readable stage label."),
+    })
+    .describe("Subtle, non-checklist progress signal (0-100)."),
+  recommendation: zod
+    .union([
+      zod.object({
+        recommendedMajor: zod.string(),
+        matchScore: zod
+          .number()
+          .min(startInterviewResponseRecommendationOneMatchScoreMin)
+          .max(startInterviewResponseRecommendationOneMatchScoreMax),
+        whyItFits: zod.array(zod.string()),
+        alternativeMajors: zod.array(zod.string()),
+        academicStrengths: zod.array(zod.string()),
+        careerAdvice: zod.array(zod.string()),
+        closingMessage: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional()
+    .describe("Final recommendation. Present when kind=result."),
+});
+
+/**
  * Submits the full transcript so far (messages between the student and the AI advisor)
 and returns either the next AI question or the final recommendation.
 
@@ -69,6 +118,66 @@ export const InterviewTurnResponse = zod.object({
           .number()
           .min(interviewTurnResponseRecommendationOneMatchScoreMin)
           .max(interviewTurnResponseRecommendationOneMatchScoreMax),
+        whyItFits: zod.array(zod.string()),
+        alternativeMajors: zod.array(zod.string()),
+        academicStrengths: zod.array(zod.string()),
+        careerAdvice: zod.array(zod.string()),
+        closingMessage: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional()
+    .describe("Final recommendation. Present when kind=result."),
+});
+
+/**
+ * Submits the full transcript so far and asks the AI advisor to produce the final
+recommendation immediately, regardless of whether it would normally have done so.
+
+ * @summary Force the AI to produce the final recommendation now
+ */
+export const FinalizeInterviewBody = zod.object({
+  messages: zod
+    .array(
+      zod.object({
+        role: zod.enum(["student", "advisor"]),
+        content: zod.string(),
+      }),
+    )
+    .describe("The full transcript of the interview so far, oldest first."),
+});
+
+export const finalizeInterviewResponseProgressPercentMin = 0;
+export const finalizeInterviewResponseProgressPercentMax = 100;
+
+export const finalizeInterviewResponseRecommendationOneMatchScoreMin = 0;
+export const finalizeInterviewResponseRecommendationOneMatchScoreMax = 100;
+
+export const FinalizeInterviewResponse = zod.object({
+  kind: zod.enum(["question", "result"]),
+  question: zod
+    .string()
+    .nullish()
+    .describe(
+      "The next AI question for the student. Present when kind=question.",
+    ),
+  progress: zod
+    .object({
+      percent: zod
+        .number()
+        .min(finalizeInterviewResponseProgressPercentMin)
+        .max(finalizeInterviewResponseProgressPercentMax),
+      stage: zod.string().describe("A short human-readable stage label."),
+    })
+    .describe("Subtle, non-checklist progress signal (0-100)."),
+  recommendation: zod
+    .union([
+      zod.object({
+        recommendedMajor: zod.string(),
+        matchScore: zod
+          .number()
+          .min(finalizeInterviewResponseRecommendationOneMatchScoreMin)
+          .max(finalizeInterviewResponseRecommendationOneMatchScoreMax),
         whyItFits: zod.array(zod.string()),
         alternativeMajors: zod.array(zod.string()),
         academicStrengths: zod.array(zod.string()),

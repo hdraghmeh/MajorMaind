@@ -1,6 +1,10 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { InterviewTurnBody, InterviewTurnResponse } from "@workspace/api-zod";
+import {
+  InterviewTurnBody,
+  FinalizeInterviewBody,
+  InterviewTurnResponse,
+} from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
@@ -89,13 +93,14 @@ const RESPONSE_SCHEMA = {
   required: ["kind", "question", "progress", "recommendation"],
 } as const;
 
-router.post("/interview/turn", async (req, res) => {
-  const parsed = InterviewTurnBody.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: "Invalid input" });
-  }
-  const { messages, forceFinalize } = parsed.data;
+type InterviewMessage = { role: "student" | "advisor"; content: string };
 
+async function runTurn(
+  req: Request,
+  res: Response,
+  messages: InterviewMessage[],
+  forceFinalize: boolean,
+) {
   const chatMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
     { role: "system", content: SYSTEM_PROMPT },
   ];
@@ -148,7 +153,10 @@ router.post("/interview/turn", async (req, res) => {
     }
     const validated = InterviewTurnResponse.safeParse(json);
     if (!validated.success) {
-      req.log?.error({ issues: validated.error.issues, raw }, "interview output validation failed");
+      req.log?.error(
+        { issues: validated.error.issues, raw },
+        "interview output validation failed",
+      );
       return res.status(500).json({ error: "AI output failed validation" });
     }
     return res.json(validated.data);
@@ -157,6 +165,27 @@ router.post("/interview/turn", async (req, res) => {
     const message = err instanceof Error ? err.message : "AI service failure";
     return res.status(500).json({ error: message });
   }
+}
+
+router.post("/interview/start", async (req, res) => {
+  return runTurn(req, res, [], false);
+});
+
+router.post("/interview/turn", async (req, res) => {
+  const parsed = InterviewTurnBody.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid input" });
+  }
+  const { messages, forceFinalize } = parsed.data;
+  return runTurn(req, res, messages, Boolean(forceFinalize));
+});
+
+router.post("/interview/finalize", async (req, res) => {
+  const parsed = FinalizeInterviewBody.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid input" });
+  }
+  return runTurn(req, res, parsed.data.messages, true);
 });
 
 export default router;

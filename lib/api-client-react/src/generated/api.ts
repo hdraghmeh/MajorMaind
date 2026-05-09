@@ -19,6 +19,7 @@ import type {
 import type {
   HealthStatus,
   InterviewError,
+  InterviewFinalizeInput,
   InterviewTurn,
   InterviewTurnInput,
 } from "./api.schemas";
@@ -109,6 +110,90 @@ export function useHealthCheck<
 }
 
 /**
+ * Returns the AI advisor's opening greeting and first question. The client should
+treat the returned turn as the first advisor message in a fresh transcript.
+
+ * @summary Start a new AI interview
+ */
+export const getStartInterviewUrl = () => {
+  return `/api/interview/start`;
+};
+
+export const startInterview = async (
+  options?: RequestInit,
+): Promise<InterviewTurn> => {
+  return customFetch<InterviewTurn>(getStartInterviewUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getStartInterviewMutationOptions = <
+  TError = ErrorType<InterviewError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof startInterview>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof startInterview>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["startInterview"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof startInterview>>,
+    void
+  > = () => {
+    return startInterview(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type StartInterviewMutationResult = NonNullable<
+  Awaited<ReturnType<typeof startInterview>>
+>;
+
+export type StartInterviewMutationError = ErrorType<InterviewError>;
+
+/**
+ * @summary Start a new AI interview
+ */
+export const useStartInterview = <
+  TError = ErrorType<InterviewError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof startInterview>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof startInterview>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getStartInterviewMutationOptions(options));
+};
+
+/**
  * Submits the full transcript so far (messages between the student and the AI advisor)
 and returns either the next AI question or the final recommendation.
 
@@ -195,4 +280,93 @@ export const useInterviewTurn = <
   TContext
 > => {
   return useMutation(getInterviewTurnMutationOptions(options));
+};
+
+/**
+ * Submits the full transcript so far and asks the AI advisor to produce the final
+recommendation immediately, regardless of whether it would normally have done so.
+
+ * @summary Force the AI to produce the final recommendation now
+ */
+export const getFinalizeInterviewUrl = () => {
+  return `/api/interview/finalize`;
+};
+
+export const finalizeInterview = async (
+  interviewFinalizeInput: InterviewFinalizeInput,
+  options?: RequestInit,
+): Promise<InterviewTurn> => {
+  return customFetch<InterviewTurn>(getFinalizeInterviewUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(interviewFinalizeInput),
+  });
+};
+
+export const getFinalizeInterviewMutationOptions = <
+  TError = ErrorType<InterviewError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof finalizeInterview>>,
+    TError,
+    { data: BodyType<InterviewFinalizeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof finalizeInterview>>,
+  TError,
+  { data: BodyType<InterviewFinalizeInput> },
+  TContext
+> => {
+  const mutationKey = ["finalizeInterview"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof finalizeInterview>>,
+    { data: BodyType<InterviewFinalizeInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return finalizeInterview(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type FinalizeInterviewMutationResult = NonNullable<
+  Awaited<ReturnType<typeof finalizeInterview>>
+>;
+export type FinalizeInterviewMutationBody = BodyType<InterviewFinalizeInput>;
+export type FinalizeInterviewMutationError = ErrorType<InterviewError>;
+
+/**
+ * @summary Force the AI to produce the final recommendation now
+ */
+export const useFinalizeInterview = <
+  TError = ErrorType<InterviewError>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof finalizeInterview>>,
+    TError,
+    { data: BodyType<InterviewFinalizeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof finalizeInterview>>,
+  TError,
+  { data: BodyType<InterviewFinalizeInput> },
+  TContext
+> => {
+  return useMutation(getFinalizeInterviewMutationOptions(options));
 };

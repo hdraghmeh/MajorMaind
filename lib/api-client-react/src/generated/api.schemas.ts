@@ -29,6 +29,11 @@ export interface InterviewTurnInput {
   forceFinalize?: boolean;
 }
 
+export interface InterviewFinalizeInput {
+  /** The full transcript of the interview so far, oldest first. */
+  messages: InterviewMessage[];
+}
+
 /**
  * Subtle, non-checklist progress signal (0-100).
  */
