@@ -1,0 +1,228 @@
+Enhance the “Future Self Simulation” feature inside MajorMind by transforming each future identity selection into a visual immersive career scene.
+
+==================================================
+🎯 FEATURE UPGRADE
+==================================================
+
+After the student selects a future identity card, dynamically display a large animated visual scene representing that profession and future lifestyle.
+
+The goal is to make the student emotionally feel:
+“This could actually be me in the future.”
+
+This should create:
+- emotional connection
+- deeper engagement
+- stronger behavioral profiling
+- more immersive AI experience
+
+==================================================
+🖼️ VISUAL CAREER SCENES
+==================================================
+
+Each selected future identity must trigger a unique visual environment.
+
+==================================================
+💻 BUILDING AI APPLICATIONS
+==================================================
+
+Show:
+- futuristic software engineer workspace
+- holographic AI screens
+- coding interfaces
+- floating data visualizations
+- modern startup office
+- glowing technology environment
+
+Character appearance:
+- modern engineer
+- smart casual clothing
+- working on advanced AI systems
+
+Animation:
+- floating UI particles
+- moving code effects
+- subtle hologram animations
+
+==================================================
+🏥 RUNNING A HOSPITAL
+==================================================
+
+Show:
+- modern futuristic hospital
+- healthcare technology
+- medical dashboards
+- doctors collaborating
+- patient care environment
+
+Character appearance:
+- professional doctor / healthcare leader
+- confident and calm
+
+Animation:
+- glowing medical screens
+- soft heartbeat pulse effects
+- dynamic medical interface motion
+
+==================================================
+📈 MANAGING A COMPANY
+==================================================
+
+Show:
+- startup CEO office
+- business analytics screens
+- strategy meetings
+- innovation environment
+- modern glass office
+
+Character appearance:
+- entrepreneur / startup founder
+- confident leadership posture
+
+Animation:
+- animated graphs
+- moving analytics
+- city skyline motion
+
+==================================================
+🎬 PRODUCING FILMS & MEDIA
+==================================================
+
+Show:
+- creative media studio
+- cameras and editing screens
+- cinematic lighting
+- production environment
+
+Character appearance:
+- creative media producer
+- artistic energetic personality
+
+Animation:
+- moving video timelines
+- cinematic light effects
+- floating media elements
+
+==================================================
+🔬 RESEARCHING DISEASES
+==================================================
+
+Show:
+- advanced scientific laboratory
+- futuristic medical research center
+- microscopes and AI diagnostics
+- scientific discovery environment
+
+Character appearance:
+- medical researcher / scientist
+
+Animation:
+- floating DNA graphics
+- laboratory interface movement
+- scientific visualization effects
+
+==================================================
+🎨 DESIGNING CREATIVE BRANDS
+==================================================
+
+Show:
+- creative design studio
+- branding mockups
+- color palettes
+- digital drawing tools
+
+Character appearance:
+- creative designer
+- expressive artistic workspace
+
+Animation:
+- floating shapes
+- moving gradients
+- animated design layers
+
+==================================================
+🧠 TEACHING & INSPIRING STUDENTS
+==================================================
+
+Show:
+- modern interactive classroom
+- digital teaching tools
+- inspiring educational environment
+
+Character appearance:
+- inspiring educator
+- engaging mentor personality
+
+Animation:
+- animated educational boards
+- glowing learning effects
+- floating knowledge particles
+
+==================================================
+🎨 VISUAL STYLE
+==================================================
+
+The scenes must feel:
+- cinematic
+- futuristic
+- startup-level
+- emotional
+- inspirational
+
+Use:
+- glassmorphism
+- soft gradients
+- depth
+- subtle motion
+- immersive transitions
+
+==================================================
+🎨 MAJORMIND COLORS
+==================================================
+
+Primary AI Green:
+#84e4a8
+
+Deep Academic Red:
+#71151a
+
+Neutral Gray:
+#5d5a52
+
+==================================================
+⚡ INTERACTION EXPERIENCE
+==================================================
+
+When the student clicks a future identity:
+
+1. Smooth zoom transition
+2. Career scene fades in
+3. AI Avatar reacts
+4. Scene animations start
+5. AI says:
+
+“Interesting… I can actually imagine you in this environment.”
+
+==================================================
+🧠 BEHAVIORAL LOGIC
+==================================================
+
+The amount of time the student spends exploring each future scene should increase hidden interest scoring.
+
+Track:
+- hover duration
+- click behavior
+- revisit frequency
+- interaction depth
+
+==================================================
+🚀 UX GOAL
+==================================================
+
+This should feel like:
+- stepping into your future life
+- exploring your future identity
+- an AI-powered career simulation
+
+NOT:
+- a normal educational questionnaire
+- static career cards

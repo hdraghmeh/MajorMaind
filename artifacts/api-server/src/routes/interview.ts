@@ -5,6 +5,7 @@ import {
   FinalizeInterviewBody,
   InterviewTurnResponse,
 } from "@workspace/api-zod";
+import { saveInterviewRecord } from "../lib/saveInterviewRecord";
 
 const router: IRouter = Router();
 
@@ -159,6 +160,21 @@ async function runTurn(
       );
       return res.status(500).json({ error: "AI output failed validation" });
     }
+
+    // Save completed interview to disk when the AI delivers its final recommendation
+    if (validated.data.kind === "result" && validated.data.recommendation) {
+      const user = req.isAuthenticated() ? req.user : null;
+      saveInterviewRecord(
+        messages as Array<{ role: "student" | "advisor"; content: string }>,
+        validated.data.recommendation as Parameters<typeof saveInterviewRecord>[1],
+        user ? { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName } : null,
+      ).then((filePath) => {
+        req.log?.info({ filePath }, "interview record saved");
+      }).catch((err) => {
+        req.log?.error({ err }, "failed to save interview record");
+      });
+    }
+
     return res.json(validated.data);
   } catch (err) {
     req.log?.error({ err }, "interview turn failed");
