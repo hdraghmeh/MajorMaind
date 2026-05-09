@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { getSessions, createSession, loadSessionsFromServer, mergeServerSessions, backfillLocalSessionsToServer, type StoredSession } from "@/lib/sessions";
+import { getStudentProfile } from "@/lib/studentProfile";
 import { Button, Card, CardContent, Chip } from "@heroui/react";
 import { useAuth } from "@workspace/replit-auth-web";
 import Navbar from "@/components/Navbar";
 import logoUrl from "/logo.png";
-import { ArrowRight, Brain, MessageSquare, Award, BookOpen, TrendingUp, Users, ChevronDown, LogIn } from "lucide-react";
+import { ArrowRight, Brain, MessageSquare, Award, BookOpen, TrendingUp, Users, ChevronDown, UserCircle } from "lucide-react";
 
 const STEPS = [
   {
@@ -122,9 +123,16 @@ export default function Home() {
     return () => { active = false; };
   }, [isAuthenticated, authLoading]);
 
+  const hasProfile = !!getStudentProfile()?.name;
+
   const handleStart = () => {
-    const session = createSession();
-    setLocation(`/interview/${session.id}`);
+    // Send to profile setup first if not filled; otherwise straight to interview
+    if (!hasProfile) {
+      setLocation("/profile");
+    } else {
+      const session = createSession();
+      setLocation(`/interview/${session.id}`);
+    }
   };
 
   const scrollToHow = () => {
@@ -191,9 +199,20 @@ export default function Home() {
               size="lg"
               className="btn-shimmer px-8 py-6 text-lg rounded-full group"
             >
-              Start your free interview
+              {hasProfile ? "Start your free interview" : "Set up your profile & start"}
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-200" />
             </Button>
+            {hasProfile && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onPress={() => setLocation("/profile")}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+              >
+                <UserCircle className="w-4 h-4" />
+                Edit profile
+              </Button>
+            )}
             <Button
               variant="outline"
               size="lg"

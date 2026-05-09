@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRoute, useLocation } from "wouter";
 import { getSession, saveSession, type StoredSession } from "@/lib/sessions";
+import { getStudentProfile, buildProfileContext } from "@/lib/studentProfile";
 import { useInterviewTurn, type InterviewMessage } from "@workspace/api-client-react";
 import { Button } from "@heroui/react";
 import { Input } from "@heroui/react";
@@ -64,7 +65,10 @@ export default function Interview() {
 
     if (s.messages.length === 0 && !initialized.current) {
       initialized.current = true;
-      runTurn([], s);
+      // Build profile context to inject into the first AI turn
+      const profile = getStudentProfile();
+      const profileCtx = profile?.name ? buildProfileContext(profile) : null;
+      runTurn([], s, false, profileCtx);
     }
   }, [params?.sessionId]);
 
@@ -81,6 +85,7 @@ export default function Interview() {
     currentMessages: InterviewMessage[],
     s: StoredSession,
     forceFinalize?: boolean,
+    profileContext?: string | null,
   ) => {
     const hasStudentPrior = currentMessages.some((m) => m.role === "student");
 
@@ -89,7 +94,7 @@ export default function Interview() {
 
     try {
       const response = await turnMutation.mutateAsync({
-        data: { messages: currentMessages, forceFinalize },
+        data: { messages: currentMessages, forceFinalize, profileContext: profileContext ?? undefined },
       });
 
       const newSession = { ...s };

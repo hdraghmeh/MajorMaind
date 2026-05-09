@@ -332,6 +332,9 @@ components:
         forceFinalize:
           type: boolean
           description: When true, instructs the advisor to produce a final recommendation now.
+        profileContext:
+          type: string
+          description: Optional pre-filled student profile context to inject into the AI system prompt.
       required:
         - messages
     InterviewFinalizeInput:

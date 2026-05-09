@@ -12,4 +12,6 @@ export interface InterviewTurnInput {
   messages: InterviewMessage[];
   /** When true, instructs the advisor to produce a final recommendation now. */
   forceFinalize?: boolean;
+  /** Optional pre-filled student profile context to inject into the AI system prompt. */
+  profileContext?: string;
 }

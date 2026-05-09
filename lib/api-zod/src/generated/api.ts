@@ -85,6 +85,12 @@ export const InterviewTurnBody = zod.object({
     .describe(
       "When true, instructs the advisor to produce a final recommendation now.",
     ),
+  profileContext: zod
+    .string()
+    .optional()
+    .describe(
+      "Optional pre-filled student profile context to inject into the AI system prompt.",
+    ),
 });
 
 export const interviewTurnResponseProgressPercentMin = 0;

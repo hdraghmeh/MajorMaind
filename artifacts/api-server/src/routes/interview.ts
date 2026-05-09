@@ -101,17 +101,22 @@ async function runTurn(
   res: Response,
   messages: InterviewMessage[],
   forceFinalize: boolean,
+  profileContext?: string,
 ) {
+  // Combine base system prompt with student profile context if provided
+  const systemContent = profileContext
+    ? `${SYSTEM_PROMPT}\n\n${profileContext}`
+    : SYSTEM_PROMPT;
+
   const chatMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
-    { role: "system", content: SYSTEM_PROMPT },
+    { role: "system", content: systemContent },
   ];
 
   if (messages.length === 0) {
-    chatMessages.push({
-      role: "user",
-      content:
-        "[SYSTEM NOTE] Begin the interview now with a warm greeting and your first question. Keep it short and inviting.",
-    });
+    const greeting = profileContext
+      ? "[SYSTEM NOTE] You already know the student's profile (see above). Begin with a warm, personalised greeting that references their name and one specific detail from their profile. Then ask your first follow-up question. Keep it short and inviting."
+      : "[SYSTEM NOTE] Begin the interview now with a warm greeting and your first question. Keep it short and inviting.";
+    chatMessages.push({ role: "user", content: greeting });
   } else {
     for (const m of messages) {
       chatMessages.push({
@@ -192,8 +197,8 @@ router.post("/interview/turn", async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: "Invalid input" });
   }
-  const { messages, forceFinalize } = parsed.data;
-  return runTurn(req, res, messages, Boolean(forceFinalize));
+  const { messages, forceFinalize, profileContext } = parsed.data;
+  return runTurn(req, res, messages, Boolean(forceFinalize), profileContext ?? undefined);
 });
 
 router.post("/interview/finalize", async (req, res) => {
