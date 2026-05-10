@@ -52,8 +52,8 @@
   --color-card: oklch(1 0 0);
   --color-card-foreground: oklch(0.14 0.01 80);
 
-  --font-sans: 'Almarai', sans-serif;
-  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Tajawal', sans-serif;
+  --font-serif: 'Tajawal', sans-serif;
   --font-mono: Menlo, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -233,11 +233,11 @@
 
 /* ── Font Application — outside layer to override HeroUI ── */
 body, input, textarea, select, button {
-  font-family: 'Almarai', sans-serif !important;
+  font-family: 'Tajawal', sans-serif !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Playfair Display', 'Almarai', serif !important;
+  font-family: 'Tajawal', sans-serif !important;
   color: #71151a;
 }
 
