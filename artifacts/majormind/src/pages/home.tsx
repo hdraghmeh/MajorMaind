@@ -390,7 +390,7 @@ export default function Home() {
       </section>
 
       {/* ── Stats bar ── */}
-      <section className="border-y border-[--border] bg-[--surface-secondary]">
+      <section className="bg-[--surface-secondary]">
         <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-4 gap-10">
           {STATS.map((stat, i) => (
             <StatCounter
@@ -448,7 +448,7 @@ export default function Home() {
       </section>
 
       {/* ── Why MajorMind ── */}
-      <section className="border-y border-[--border]" style={{ background: "var(--surface-secondary)" }}>
+      <section style={{ background: "var(--surface-secondary)" }}>
         <div className="max-w-6xl mx-auto px-6 py-24 space-y-16">
           <Reveal className="text-center space-y-4">
             <h2 className="text-4xl md:text-5xl font-serif" style={{ color: "#71151a" }}>لماذا MajorMind؟</h2>
@@ -585,7 +585,7 @@ export default function Home() {
       )}
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[--border]" style={{ background: "var(--surface-secondary)" }}>
+      <footer style={{ background: "var(--surface-secondary)" }}>
         <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <img src={logoUrl} alt="MajorMind" className="h-10 w-auto object-contain" />
