@@ -39,7 +39,7 @@ export function AlmaraiPlayfair() {
         </h1>
 
         <p style={{ fontSize: 16, lineHeight: 2, color: "#5d5a52", maxWidth: 500, margin: "0 auto 44px", fontWeight: 300, letterSpacing: "0.1px" }}>
-          مقابلة ذكاء اصطناعي تحلّل شخصيتك ومعدلك وتطلعاتك، لتوصي بأنسب تخصص في جامعة الأمة العربية الأمريكية.
+          مقابلة ذكاء اصطناعي تحلّل شخصيتك ومعدلك وتطلعاتك، لتوصيك بأنسب تخصص جامعي لمسيرتك.
         </p>
 
         <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>

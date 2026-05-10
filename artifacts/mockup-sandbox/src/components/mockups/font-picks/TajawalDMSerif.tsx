@@ -37,7 +37,7 @@ export function TajawalDMSerif() {
         </h1>
 
         <p style={{ fontSize: 18, lineHeight: 1.85, color: "#5d5a52", maxWidth: 520, margin: "0 auto 40px", fontWeight: 300 }}>
-          مقابلة ذكاء اصطناعي تحلّل شخصيتك ومعدلك وتطلعاتك، لتوصي بأنسب تخصص في جامعة الأمة العربية الأمريكية.
+          مقابلة ذكاء اصطناعي تحلّل شخصيتك ومعدلك وتطلعاتك، لتوصيك بأنسب تخصص جامعي لمسيرتك.
         </p>
 
         <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>

@@ -37,7 +37,7 @@ export function IBMPlexFraunces() {
         </h1>
 
         <p style={{ fontSize: 15, lineHeight: 1.9, color: "#a8a29e", maxWidth: 500, margin: "0 auto 48px", fontWeight: 300, letterSpacing: "0.2px" }}>
-          مقابلة ذكاء اصطناعي تحلّل شخصيتك ومعدلك وتطلعاتك، لتوصي بأنسب تخصص في جامعة الأمة العربية الأمريكية.
+          مقابلة ذكاء اصطناعي تحلّل شخصيتك ومعدلك وتطلعاتك، لتوصيك بأنسب تخصص جامعي لمسيرتك.
         </p>
 
         <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>

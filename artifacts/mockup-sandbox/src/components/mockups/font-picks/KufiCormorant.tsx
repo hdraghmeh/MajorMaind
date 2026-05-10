@@ -44,7 +44,7 @@ export function KufiCormorant() {
         <div style={{ width: 60, height: 2, background: "#84e4a8", margin: "0 auto 28px" }} />
 
         <p style={{ fontSize: 14, lineHeight: 2.1, color: "#8c7f6e", maxWidth: 480, margin: "0 auto 44px", fontWeight: 400 }}>
-          مقابلة ذكاء اصطناعي تحلّل شخصيتك ومعدلك وتطلعاتك، لتوصي بأنسب تخصص في جامعة الأمة العربية الأمريكية.
+          مقابلة ذكاء اصطناعي تحلّل شخصيتك ومعدلك وتطلعاتك، لتوصيك بأنسب تخصص جامعي لمسيرتك.
         </p>
 
         <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
