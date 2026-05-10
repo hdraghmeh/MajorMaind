@@ -324,6 +324,19 @@ export default function Home() {
             </p>
           </div>
 
+          {!authLoading && !isAuthenticated && (
+            <div className="animate-in fade-in duration-1000 delay-200 flex justify-center">
+              <button
+                onClick={() => { window.location.href = "/api/login"; }}
+                className="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-[--border] bg-[--surface] hover:bg-[--surface-secondary] hover:border-[#71151a] transition-all duration-200 shadow-sm"
+              >
+                <span className="w-2 h-2 rounded-full bg-[#84e4a8] animate-pulse shrink-0" />
+                <span className="text-sm font-medium text-foreground">سجّل الدخول لبدء مقابلتك</span>
+                <LogIn className="w-3.5 h-3.5 text-muted-foreground group-hover:text-[#71151a] transition-colors duration-200" />
+              </button>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
             <Button
               onPress={handleStart}
@@ -351,19 +364,6 @@ export default function Home() {
               >
                 <UserCircle className="w-3.5 h-3.5" />
                 تعديل الملف الشخصي
-              </button>
-            </div>
-          )}
-
-          {!authLoading && !isAuthenticated && (
-            <div className="animate-in fade-in duration-1000 delay-500 flex justify-center">
-              <button
-                onClick={() => { window.location.href = "/api/login"; }}
-                className="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-[--border] bg-[--surface] hover:bg-[--surface-secondary] hover:border-[#71151a] transition-all duration-200 shadow-sm"
-              >
-                <span className="w-2 h-2 rounded-full bg-[#84e4a8] animate-pulse shrink-0" />
-                <span className="text-sm font-medium text-foreground">سجّل الدخول لبدء مقابلتك</span>
-                <LogIn className="w-3.5 h-3.5 text-muted-foreground group-hover:text-[#71151a] transition-colors duration-200" />
               </button>
             </div>
           )}
