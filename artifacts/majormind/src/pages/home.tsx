@@ -367,24 +367,6 @@ export default function Home() {
             </div>
           )}
 
-          {sessions.length > 0 && (
-            <p className="text-sm text-muted-foreground animate-in fade-in duration-1000 delay-500">
-              لديك {sessions.length} جلسة{sessions.length > 1 ? "" : ""} سابقة —{" "}
-              <button
-                onClick={() => {
-                  if (!showSessions) {
-                    pendingScrollRef.current = true;
-                    toggleSessions(true);
-                  } else {
-                    document.getElementById("sessions")?.scrollIntoView({ behavior: "smooth" });
-                  }
-                }}
-                className="underline underline-offset-2 hover:text-foreground transition-colors"
-              >
-                استئناف إحداها
-              </button>
-            </p>
-          )}
         </div>
 
         <button
