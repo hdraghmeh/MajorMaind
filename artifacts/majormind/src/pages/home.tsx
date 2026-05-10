@@ -355,14 +355,16 @@ export default function Home() {
           </div>
 
           {!authLoading && !isAuthenticated && (
-            <p className="text-sm text-muted-foreground animate-in fade-in duration-1000 delay-500">
+            <div className="animate-in fade-in duration-1000 delay-500 flex justify-center">
               <button
                 onClick={() => { window.location.href = "/api/login"; }}
-                className="inline-flex items-center gap-1.5 underline underline-offset-2 hover:text-foreground transition-colors"
+                className="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-[--border] bg-[--surface] hover:bg-[--surface-secondary] hover:border-[#71151a] transition-all duration-200 shadow-sm"
               >
-                سجّل الدخول لبدء مقابلتك
+                <span className="w-2 h-2 rounded-full bg-[#84e4a8] animate-pulse shrink-0" />
+                <span className="text-sm font-medium text-foreground">سجّل الدخول لبدء مقابلتك</span>
+                <ArrowLeft className="w-3.5 h-3.5 text-muted-foreground group-hover:text-[#71151a] group-hover:-translate-x-1 transition-all duration-200" />
               </button>
-            </p>
+            </div>
           )}
 
           {sessions.length > 0 && (
