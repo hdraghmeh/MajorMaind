@@ -594,6 +594,7 @@ export default function Home() {
           {[
             { name: "هامة دراغمة", initials: "هد", linkedin: "https://www.linkedin.com/in/hama-daraghmeh-0118b5333/" },
             { name: "هبة ربايعة",  initials: "هر", linkedin: "https://www.linkedin.com/in/heba-rabaya/" },
+            { name: "ودانة ياسين", initials: "وي", linkedin: "https://www.linkedin.com/in/dana-yasin-7b3482395/" },
           ].map((member, i) => (
             <RevealScale key={member.name} delay={i * 120}>
               <a
