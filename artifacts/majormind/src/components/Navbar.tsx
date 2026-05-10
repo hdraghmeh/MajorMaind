@@ -20,7 +20,7 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 border-b border-[--border]"
+      className="fixed top-0 left-0 right-0 z-50"
       style={{
         background: "color-mix(in oklab, var(--background) 85%, transparent)",
         backdropFilter: "blur(16px)",
@@ -90,10 +90,9 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
               </Dropdown>
             ) : (
               <Button
-                variant="ghost"
                 size="sm"
                 onPress={() => setLocation("/login")}
-                className="rounded-full px-4 font-medium flex items-center gap-1.5"
+                className="btn-shimmer rounded-full px-5 font-medium"
               >
                 تسجيل الدخول
               </Button>
