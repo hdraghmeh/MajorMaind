@@ -433,7 +433,7 @@ export default function Home() {
                     </div>
                     <span
                       className="text-4xl font-serif opacity-20 group-hover:opacity-40 transition-opacity duration-300"
-                      style={{ color: "var(--accent)" }}
+                      style={{ color: "#71151a" }}
                     >
                       {step.number}
                     </span>
