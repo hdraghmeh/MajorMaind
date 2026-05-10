@@ -370,23 +370,6 @@ export default function Home() {
 
         </div>
 
-        <button
-          onClick={scrollToHow}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 hover:opacity-70 transition-opacity"
-          aria-label="تمرير لأسفل"
-        >
-          <svg
-            width="28" height="44" viewBox="0 0 28 44" fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="opacity-40 hover:opacity-70 transition-opacity"
-          >
-            <rect x="1" y="1" width="26" height="42" rx="13" stroke="#71151a" strokeWidth="2"/>
-            <rect x="12.5" y="7" width="3" height="8" rx="1.5" fill="#71151a">
-              <animate attributeName="y" values="7;13;7" dur="1.6s" repeatCount="indefinite"/>
-              <animate attributeName="opacity" values="1;0;1" dur="1.6s" repeatCount="indefinite"/>
-            </rect>
-          </svg>
-        </button>
       </section>
 
       {/* ── Stats bar ── */}
