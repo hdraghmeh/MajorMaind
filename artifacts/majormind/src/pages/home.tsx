@@ -590,6 +590,19 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-serif" style={{ color: "#71151a" }}>الفريق</h2>
           <p className="text-muted-foreground">وراء كل فكرة جيدة فريق يؤمن بها.</p>
         </Reveal>
+        <div className="flex justify-center mb-10">
+          <a
+            href="https://www.linkedin.com/in/sanad-malaysha/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-[--border] bg-[--surface] hover:border-[#71151a] transition-all duration-200 shadow-sm"
+          >
+            <span className="text-sm text-muted-foreground">بإشراف</span>
+            <span className="font-semibold text-sm group-hover:text-[#71151a] transition-colors duration-200">Dr. Sanad Malaysha</span>
+            <Linkedin className="w-3.5 h-3.5 text-muted-foreground group-hover:text-[#0a66c2] transition-colors duration-200" />
+          </a>
+        </div>
+
         <div className="flex flex-wrap justify-center gap-8">
           {[
             { name: "Hama Daraghmeh", initials: "HD", linkedin: "https://www.linkedin.com/in/hama-daraghmeh-0118b5333/" },
