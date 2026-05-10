@@ -7,7 +7,7 @@ import { useAuth } from "@workspace/replit-auth-web";
 import Navbar from "@/components/Navbar";
 import WelcomeModal, { hasBeenWelcomed, markWelcomed } from "@/components/WelcomeModal";
 import logoUrl from "/logo.png";
-import { ArrowLeft, Brain, MessageSquare, Award, BookOpen, TrendingUp, Sparkles, ChevronDown, UserCircle, Archive } from "lucide-react";
+import { ArrowLeft, Brain, MessageSquare, Award, BookOpen, TrendingUp, Sparkles, ChevronDown, UserCircle, Archive, Linkedin } from "lucide-react";
 
 const STEPS = [
   {
@@ -583,6 +583,43 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* ── Team ── */}
+      <section className="max-w-6xl mx-auto px-6 py-20">
+        <Reveal className="text-center space-y-3 mb-12">
+          <h2 className="text-3xl md:text-4xl font-serif" style={{ color: "#71151a" }}>الفريق</h2>
+          <p className="text-muted-foreground">الأشخاص الذين طوّروا هذه الفكرة إلى واقع.</p>
+        </Reveal>
+        <div className="flex flex-wrap justify-center gap-8">
+          {[
+            { name: "هامة دراغمة", initials: "هد", linkedin: "https://www.linkedin.com/in/hama-daraghmeh-0118b5333/" },
+            { name: "هبة ربايعة",  initials: "هر", linkedin: "https://www.linkedin.com/in/heba-rabaya/" },
+          ].map((member, i) => (
+            <RevealScale key={member.name} delay={i * 120}>
+              <a
+                href={member.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col items-center gap-4 p-6 rounded-2xl hover:-translate-y-1 transition-all duration-300"
+              >
+                <div
+                  className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-md group-hover:shadow-lg transition-shadow duration-300"
+                  style={{ background: "linear-gradient(135deg, #71151a 0%, #a0232c 100%)" }}
+                >
+                  {member.initials}
+                </div>
+                <div className="text-center space-y-1.5">
+                  <p className="font-semibold text-foreground group-hover:text-[#71151a] transition-colors duration-200">{member.name}</p>
+                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-[#0a66c2] transition-colors duration-200">
+                    <Linkedin className="w-3.5 h-3.5" />
+                    LinkedIn
+                  </span>
+                </div>
+              </a>
+            </RevealScale>
+          ))}
+        </div>
+      </section>
 
       {/* ── Footer ── */}
       <footer style={{ background: "var(--surface-secondary)" }}>
