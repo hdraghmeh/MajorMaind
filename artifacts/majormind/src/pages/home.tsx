@@ -592,9 +592,9 @@ export default function Home() {
         </Reveal>
         <div className="flex flex-wrap justify-center gap-8">
           {[
-            { name: "هامة دراغمة", initials: "هد", linkedin: "https://www.linkedin.com/in/hama-daraghmeh-0118b5333/" },
-            { name: "هبة ربايعة",  initials: "هر", linkedin: "https://www.linkedin.com/in/heba-rabaya/" },
-            { name: "ودانة ياسين", initials: "وي", linkedin: "https://www.linkedin.com/in/dana-yasin-7b3482395/" },
+            { name: "Hama Daraghmeh", initials: "HD", linkedin: "https://www.linkedin.com/in/hama-daraghmeh-0118b5333/" },
+            { name: "Heba Rabaya",    initials: "HR", linkedin: "https://www.linkedin.com/in/heba-rabaya/" },
+            { name: "Dana Yasin",    initials: "DY", linkedin: "https://www.linkedin.com/in/dana-yasin-7b3482395/" },
           ].map((member, i) => (
             <RevealScale key={member.name} delay={i * 120}>
               <a
