@@ -232,6 +232,11 @@
   100% { transform: scale(1); }
 }
 
+@keyframes card-shine {
+  0%   { transform: translateX(-120%) skewX(-12deg); }
+  100% { transform: translateX(220%) skewX(-12deg); }
+}
+
 /* ── Animation Classes ── */
 .animate-float        { animation: float 4s ease-in-out infinite; }
 .animate-orb-drift    { animation: orb-drift 9s ease-in-out infinite; }
@@ -305,6 +310,31 @@ body, input, textarea, select, button {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Tajawal', sans-serif !important;
   color: #71151a;
+}
+
+/* ── Card hover shine ── */
+.card-animated {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.35s cubic-bezier(0.22,1,0.36,1),
+              box-shadow 0.35s cubic-bezier(0.22,1,0.36,1);
+}
+.card-animated::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%);
+  transform: translateX(-120%) skewX(-12deg);
+  transition: none;
+  pointer-events: none;
+  z-index: 1;
+}
+.card-animated:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px -8px rgba(113,21,26,0.18), 0 2px 8px -2px rgba(113,21,26,0.10) !important;
+}
+.card-animated:hover::before {
+  animation: card-shine 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
 }
 
 /* ── Shimmer Button ── */

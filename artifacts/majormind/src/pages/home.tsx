@@ -420,7 +420,7 @@ export default function Home() {
           {STEPS.map((step, i) => (
             <RevealScale key={step.number} delay={i * 130}>
               <Card
-                className="h-full group hover:-translate-y-2 transition-all duration-300 cursor-default"
+                className="card-animated h-full group cursor-default"
                 style={{ boxShadow: "var(--surface-shadow)" }}
               >
                 <CardContent className="p-8 space-y-5">
@@ -461,7 +461,7 @@ export default function Home() {
             {FEATURES.map((feat, i) => (
               <RevealScale key={feat.title} delay={i * 110}>
                 <Card
-                  className="group hover:-translate-y-1.5 hover:shadow-lg transition-all duration-300 cursor-default h-full"
+                  className="card-animated cursor-default h-full"
                   style={{ boxShadow: "var(--surface-shadow)" }}
                 >
                   <CardContent className="p-7 flex gap-5">
