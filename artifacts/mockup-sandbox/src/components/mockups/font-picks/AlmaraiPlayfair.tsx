@@ -12,7 +12,7 @@ export function AlmaraiPlayfair() {
       {/* Nav */}
       <nav style={{ padding: "20px 44px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 23, color: "#71151a", fontWeight: 700 }}>
-          MajorMind AI
+          MajorMind
         </span>
         <div style={{ display: "flex", gap: 30, fontSize: 14, color: "#5d5a52" }}>
           <span>كيف يعمل؟</span>

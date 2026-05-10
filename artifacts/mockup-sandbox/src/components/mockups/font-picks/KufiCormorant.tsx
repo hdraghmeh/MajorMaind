@@ -12,7 +12,7 @@ export function KufiCormorant() {
       {/* Nav */}
       <nav style={{ padding: "22px 44px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 26, color: "#71151a", fontWeight: 600, letterSpacing: "0.5px" }}>
-          MajorMind AI
+          MajorMind
         </span>
         <div style={{ display: "flex", gap: 28, fontSize: 13, color: "#8c7f6e", fontWeight: 400 }}>
           <span>كيف يعمل؟</span>

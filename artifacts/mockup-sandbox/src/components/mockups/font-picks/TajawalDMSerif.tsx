@@ -12,7 +12,7 @@ export function TajawalDMSerif() {
       {/* Nav */}
       <nav style={{ padding: "18px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #e8e4dc" }}>
         <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 22, color: "#71151a", letterSpacing: "-0.3px" }}>
-          MajorMind AI
+          MajorMind
         </span>
         <div style={{ display: "flex", gap: 28, fontSize: 15, fontWeight: 400, color: "#5d5a52" }}>
           <span>كيف يعمل؟</span>

@@ -12,7 +12,7 @@ export function IBMPlexFraunces() {
       {/* Nav */}
       <nav style={{ padding: "22px 44px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #ffffff0f" }}>
         <span style={{ fontFamily: "'Fraunces', serif", fontSize: 22, color: "#84e4a8", fontWeight: 600, fontStyle: "italic" }}>
-          MajorMind AI
+          MajorMind
         </span>
         <div style={{ display: "flex", gap: 28, fontSize: 13, color: "#a8a29e", fontWeight: 300, letterSpacing: "0.5px" }}>
           <span>كيف يعمل؟</span>
