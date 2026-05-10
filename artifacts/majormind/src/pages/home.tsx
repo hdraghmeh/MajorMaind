@@ -7,7 +7,7 @@ import { useAuth } from "@workspace/replit-auth-web";
 import Navbar from "@/components/Navbar";
 import WelcomeModal, { hasBeenWelcomed, markWelcomed } from "@/components/WelcomeModal";
 import logoUrl from "/logo.png";
-import { ArrowLeft, Brain, MessageSquare, Award, BookOpen, TrendingUp, Users, ChevronDown, UserCircle, Archive } from "lucide-react";
+import { ArrowLeft, Brain, MessageSquare, Award, BookOpen, TrendingUp, Sparkles, ChevronDown, UserCircle, Archive } from "lucide-react";
 
 const STEPS = [
   {
@@ -47,9 +47,9 @@ const FEATURES = [
     desc: "بعد التخصص مباشرةً، تحصل على خطوات ملموسة: مهارات تبنيها، مقررات تستكشفها، وتوجه أكاديمي واضح.",
   },
   {
-    icon: Users,
-    title: "بياناتك محفوظة",
-    desc: "سجّل الدخول وجلساتك تُحفظ تلقائياً ومتاحة من أي جهاز — بياناتك لا تُشارك ولا تُباع.",
+    icon: Sparkles,
+    title: "توصية شخصية ١٠٠٪",
+    desc: "لا إجابات جاهزة ولا قوالب — كل توصية تُبنى على إجاباتك أنت، وتراعي معدلك وميولك وطموحاتك.",
   },
 ];
 
