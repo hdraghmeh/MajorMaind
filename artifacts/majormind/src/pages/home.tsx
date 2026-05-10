@@ -522,70 +522,8 @@ export default function Home() {
         </Reveal>
       </section>
 
-      {/* ── Session Archive ── */}
-      {sessions.length > 0 && (
-        <section id="sessions" className="max-w-6xl mx-auto px-6 pb-24">
-          <button
-            onClick={() => toggleSessions()}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4 group"
-            aria-expanded={showSessions}
-          >
-            <Archive className="w-3.5 h-3.5 opacity-60" />
-            <span>أرشيف الجلسات</span>
-            <span className="px-1.5 py-0.5 text-xs rounded-full bg-[--surface-secondary] border border-[--border] leading-none">
-              {sessions.length}
-            </span>
-            <ChevronDown
-              className="w-3.5 h-3.5 opacity-60 transition-transform duration-300"
-              style={{ transform: showSessions ? "rotate(180deg)" : "rotate(0deg)" }}
-            />
-          </button>
-
-          <div
-            className="overflow-hidden transition-all duration-500 ease-in-out"
-            style={{
-              maxHeight: showSessions ? `${sessionsGridRef.current?.scrollHeight ?? 9999}px` : "0px",
-              opacity: showSessions ? 1 : 0,
-            }}
-          >
-            <div ref={sessionsGridRef} className="grid sm:grid-cols-2 gap-4 pt-2">
-              {sessions.map((session, i) => {
-                const isComplete = !!session.recommendation;
-                return (
-                  <Link key={session.id} href={isComplete ? `/result/${session.id}` : `/interview/${session.id}`} className="block group">
-                    <Card
-                      className="hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
-                      style={{ boxShadow: "var(--surface-shadow)" }}
-                    >
-                      <CardContent className="p-5 flex items-center justify-between gap-4">
-                        <div className="space-y-1 min-w-0">
-                          <p className="font-medium text-foreground truncate">
-                            {session.title || `مقابلة · ${new Date(session.createdAt).toLocaleDateString("ar-SA")}`}
-                          </p>
-                          <p className="text-sm text-muted-foreground">{new Date(session.updatedAt).toLocaleString("ar-SA")}</p>
-                        </div>
-                        <div className="flex items-center gap-3 shrink-0">
-                          <Chip
-                            color={isComplete ? "success" : "default"}
-                            variant="soft"
-                            size="sm"
-                          >
-                            {isComplete ? "مكتملة" : "قيد التقدم"}
-                          </Chip>
-                          <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:-translate-x-1 transition-all" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ── Team ── */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
+      <section className="max-w-6xl mx-auto px-6 py-12">
         <Reveal className="text-center space-y-3 mb-12">
           <h2 className="text-3xl md:text-4xl font-serif" style={{ color: "#71151a" }}>الفريق</h2>
           <p className="text-muted-foreground">وراء كل فكرة جيدة فريق يؤمن بها.</p>
