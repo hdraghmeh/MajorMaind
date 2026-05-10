@@ -333,17 +333,6 @@ export default function Home() {
               {hasProfile ? "ابدأ مقابلتك المجانية" : "أعدّ ملفك وابدأ"}
               <ArrowLeft className="mr-2 w-5 h-5 group-hover:-translate-x-1.5 transition-transform duration-200" />
             </Button>
-            {hasProfile && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onPress={() => setLocation("/profile")}
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-              >
-                <UserCircle className="w-4 h-4" />
-                تعديل الملف الشخصي
-              </Button>
-            )}
             <Button
               variant="outline"
               size="lg"
@@ -353,6 +342,18 @@ export default function Home() {
               كيف يعمل؟
             </Button>
           </div>
+
+          {hasProfile && (
+            <div className="flex justify-center animate-in fade-in duration-700 delay-400">
+              <button
+                onClick={() => setLocation("/profile")}
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <UserCircle className="w-3.5 h-3.5" />
+                تعديل الملف الشخصي
+              </button>
+            </div>
+          )}
 
           {!authLoading && !isAuthenticated && (
             <div className="animate-in fade-in duration-1000 delay-500 flex justify-center">
