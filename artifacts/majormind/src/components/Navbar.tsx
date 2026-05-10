@@ -1,6 +1,5 @@
 import { useLocation } from "wouter";
 import { Button, Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
-import { createSession } from "@/lib/sessions";
 import { useAuth } from "@workspace/replit-auth-web";
 import logoUrl from "/logo.png";
 import { LogOut, User } from "lucide-react";
@@ -98,16 +97,6 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
             )
           )}
 
-          {variant === "landing" && (
-            <Button
-              variant="primary"
-              size="sm"
-              onPress={handleStart}
-              className="rounded-full px-5 font-medium"
-            >
-              ابدأ مجاناً
-            </Button>
-          )}
         </div>
       </div>
     </nav>
