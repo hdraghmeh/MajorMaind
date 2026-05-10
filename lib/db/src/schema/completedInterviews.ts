@@ -4,7 +4,7 @@ import { usersTable } from "./auth";
 export const completedInterviewsTable = pgTable("completed_interviews", {
   id: varchar("id").primaryKey(),
   savedAt: timestamp("saved_at", { withTimezone: true }).notNull().defaultNow(),
-  userId: varchar("user_id").references(() => usersTable.id, { onDelete: "set null" }).notNull(),
+  userId: varchar("user_id").references(() => usersTable.id, { onDelete: "cascade" }).notNull(),
   userEmail: varchar("user_email"),
   userFirstName: varchar("user_first_name"),
   userLastName: varchar("user_last_name"),

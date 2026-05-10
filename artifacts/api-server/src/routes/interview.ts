@@ -122,6 +122,11 @@ async function runTurn(
   profileContext?: string,
   sessionId?: string,
 ) {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   let aaupSection = "";
 
   if (profileContext) {
