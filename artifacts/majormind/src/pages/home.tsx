@@ -423,7 +423,7 @@ export default function Home() {
           <Reveal className="text-center space-y-4">
             <h2 className="text-4xl md:text-5xl font-serif" style={{ color: "#71151a" }}>لماذا MajorMind؟</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              لطلاب يواجهون أهم قرار في حياتهم الأكاديمية.
+              صُمّم خصيصاً لطالب التوجيهي الفلسطيني — يفهم فروعك، يعرف جامعاتك، ويتحدث بلغتك.
             </p>
           </Reveal>
 
