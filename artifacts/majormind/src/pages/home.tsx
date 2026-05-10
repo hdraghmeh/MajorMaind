@@ -297,6 +297,22 @@ export default function Home() {
         <WelcomeModal onClose={() => setShowWelcome(false)} />
       )}
 
+      {/* ── Global floating particles ── */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }} aria-hidden>
+        <span className="animate-particle-1 absolute top-[8%]  left-[5%]   w-2   h-2   rounded-full opacity-30" style={{ background: "#84e4a8" }} />
+        <span className="animate-particle-2 absolute top-[15%] right-[8%]  w-1.5 h-1.5 rounded-full opacity-25" style={{ background: "#84e4a8" }} />
+        <span className="animate-particle-3 absolute top-[28%] left-[18%]  w-1   h-1   rounded-full opacity-20" style={{ background: "#71151a" }} />
+        <span className="animate-particle-4 absolute top-[42%] right-[4%]  w-2   h-2   rounded-full opacity-25" style={{ background: "#84e4a8" }} />
+        <span className="animate-particle-5 absolute top-[55%] left-[3%]   w-1.5 h-1.5 rounded-full opacity-20" style={{ background: "#71151a" }} />
+        <span className="animate-particle-6 absolute top-[68%] right-[12%] w-1   h-1   rounded-full opacity-25" style={{ background: "#84e4a8" }} />
+        <span className="animate-particle-2 absolute top-[75%] left-[9%]   w-2   h-2   rounded-full opacity-20" style={{ background: "#84e4a8" }} />
+        <span className="animate-particle-1 absolute top-[85%] right-[6%]  w-1.5 h-1.5 rounded-full opacity-20" style={{ background: "#71151a" }} />
+        <span className="animate-particle-4 absolute top-[92%] left-[20%]  w-1   h-1   rounded-full opacity-15" style={{ background: "#84e4a8" }} />
+        <span className="animate-particle-3 absolute top-[35%] right-[22%] w-1.5 h-1.5 rounded-full opacity-15" style={{ background: "#84e4a8" }} />
+        <span className="animate-particle-5 absolute top-[60%] right-[28%] w-1   h-1   rounded-full opacity-20" style={{ background: "#71151a" }} />
+        <span className="animate-particle-6 absolute top-[20%] left-[35%]  w-1.5 h-1.5 rounded-full opacity-15" style={{ background: "#84e4a8" }} />
+      </div>
+
       <Navbar variant="landing" />
 
       {/* ── Hero ── */}
