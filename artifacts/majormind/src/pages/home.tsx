@@ -60,15 +60,7 @@ const STATS = [
   { label: "فروع توجيهي مغطاة", display: "٤", countTo: 4, arabicDigits: true },
 ];
 
-function Reveal({
-  children,
-  className = "",
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  delay?: number;
-}) {
+function useReveal(delay = 0, type: "reveal" | "reveal-scale" | "reveal-right" = "reveal") {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
@@ -81,13 +73,43 @@ function Reveal({
           obs.unobserve(el);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.08 }
     );
     obs.observe(el);
     return () => obs.disconnect();
   }, [delay]);
+  return { ref, className: type };
+}
+
+function Reveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const { ref, className: baseClass } = useReveal(delay, "reveal");
   return (
-    <div ref={ref} className={`reveal ${className}`}>
+    <div ref={ref} className={`${baseClass} ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function RevealScale({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const { ref, className: baseClass } = useReveal(delay, "reveal-scale");
+  return (
+    <div ref={ref} className={`${baseClass} ${className}`}>
       {children}
     </div>
   );
@@ -283,6 +305,7 @@ export default function Home() {
         className="relative min-h-[100dvh] flex flex-col items-center justify-center text-center px-6 pt-16 overflow-hidden"
       >
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
+          {/* Orbs */}
           <div
             className="animate-orb-drift absolute top-1/4 left-1/2 w-[680px] h-[680px] rounded-full opacity-[0.16]"
             style={{ background: "radial-gradient(circle, #84e4a8 0%, transparent 68%)" }}
@@ -295,13 +318,20 @@ export default function Home() {
             className="animate-orb-drift-2 absolute top-2/3 left-[15%] w-[220px] h-[220px] rounded-full opacity-[0.08]"
             style={{ background: "radial-gradient(circle, #84e4a8 0%, transparent 70%)", animationDelay: "4s" }}
           />
+          {/* Floating particles */}
+          <span className="animate-particle-1 absolute top-[18%] left-[12%]  w-2 h-2 rounded-full bg-[#84e4a8]" />
+          <span className="animate-particle-2 absolute top-[32%] right-[10%] w-1.5 h-1.5 rounded-full bg-[#84e4a8]" />
+          <span className="animate-particle-3 absolute top-[65%] left-[22%]  w-1 h-1 rounded-full bg-[#71151a]" />
+          <span className="animate-particle-4 absolute top-[72%] right-[18%] w-2 h-2 rounded-full bg-[#84e4a8]" />
+          <span className="animate-particle-5 absolute top-[45%] left-[6%]   w-1.5 h-1.5 rounded-full bg-[#71151a]" />
+          <span className="animate-particle-6 absolute top-[25%] right-[28%] w-1 h-1 rounded-full bg-[#84e4a8]" />
         </div>
 
         <div className="relative max-w-4xl mx-auto space-y-8">
           <img
             src={logoUrl}
             alt="MajorMind"
-            className="animate-float mx-auto h-28 w-auto object-contain drop-shadow-lg"
+            className="animate-float animate-glow-green mx-auto h-28 w-auto object-contain drop-shadow-lg rounded-full"
           />
 
           <div className="space-y-5 animate-in fade-in slide-in-from-bottom-6 duration-700">
@@ -388,7 +418,7 @@ export default function Home() {
 
         <div className="grid md:grid-cols-3 gap-6">
           {STEPS.map((step, i) => (
-            <Reveal key={step.number} delay={i * 120}>
+            <RevealScale key={step.number} delay={i * 130}>
               <Card
                 className="h-full group hover:-translate-y-2 transition-all duration-300 cursor-default"
                 style={{ boxShadow: "var(--surface-shadow)" }}
@@ -412,7 +442,7 @@ export default function Home() {
                   <p className="text-muted-foreground leading-relaxed">{step.desc}</p>
                 </CardContent>
               </Card>
-            </Reveal>
+            </RevealScale>
           ))}
         </div>
       </section>
@@ -429,9 +459,9 @@ export default function Home() {
 
           <div className="grid sm:grid-cols-2 gap-5">
             {FEATURES.map((feat, i) => (
-              <Reveal key={feat.title} delay={i * 100}>
+              <RevealScale key={feat.title} delay={i * 110}>
                 <Card
-                  className="group hover:-translate-y-1.5 transition-all duration-300 cursor-default h-full"
+                  className="group hover:-translate-y-1.5 hover:shadow-lg transition-all duration-300 cursor-default h-full"
                   style={{ boxShadow: "var(--surface-shadow)" }}
                 >
                   <CardContent className="p-7 flex gap-5">
@@ -447,7 +477,7 @@ export default function Home() {
                     </div>
                   </CardContent>
                 </Card>
-              </Reveal>
+              </RevealScale>
             ))}
           </div>
         </div>

@@ -194,10 +194,76 @@
   50%       { transform: scaleY(1);    opacity: 1; }
 }
 
+@keyframes particle-float {
+  0%, 100% { transform: translateY(0px)   translateX(0px);  opacity: 0.35; }
+  25%       { transform: translateY(-18px) translateX(10px); opacity: 0.65; }
+  50%       { transform: translateY(-9px)  translateX(-6px); opacity: 0.45; }
+  75%       { transform: translateY(-22px) translateX(4px);  opacity: 0.60; }
+}
+
+@keyframes reveal-scale-up {
+  from { opacity: 0; transform: translateY(24px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+@keyframes glow-pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(132,228,168,0); }
+  50%       { box-shadow: 0 0 24px 4px rgba(132,228,168,0.22); }
+}
+
+@keyframes border-glow {
+  0%, 100% { border-color: rgba(132,228,168,0.3); }
+  50%       { border-color: rgba(132,228,168,0.7); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes number-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
 /* ── Animation Classes ── */
 .animate-float        { animation: float 4s ease-in-out infinite; }
 .animate-orb-drift    { animation: orb-drift 9s ease-in-out infinite; }
 .animate-orb-drift-2  { animation: orb-drift-2 12s ease-in-out infinite; }
+
+.animate-particle-1 { animation: particle-float  6.0s ease-in-out infinite; }
+.animate-particle-2 { animation: particle-float  8.5s ease-in-out infinite 1.2s; }
+.animate-particle-3 { animation: particle-float  7.2s ease-in-out infinite 2.8s; }
+.animate-particle-4 { animation: particle-float  9.1s ease-in-out infinite 0.6s; }
+.animate-particle-5 { animation: particle-float  5.8s ease-in-out infinite 3.4s; }
+.animate-particle-6 { animation: particle-float 10.0s ease-in-out infinite 1.8s; }
+
+.animate-glow-green { animation: glow-pulse-green 3s ease-in-out infinite; }
+.animate-border-glow { animation: border-glow 2.5s ease-in-out infinite; }
+.animate-number-pop { animation: number-pop 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* ── Scroll Reveal — Scale variant ── */
+.reveal-scale {
+  opacity: 0;
+  transform: translateY(24px) scale(0.95);
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-scale.visible { opacity: 1; transform: translateY(0) scale(1); }
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(28px);
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-right.visible { opacity: 1; transform: translateX(0); }
 
 .gradient-text {
   background: linear-gradient(135deg, #71151a 0%, #a0232c 45%, #71151a 100%);
