@@ -588,7 +588,6 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-6 py-20">
         <Reveal className="text-center space-y-3 mb-12">
           <h2 className="text-3xl md:text-4xl font-serif" style={{ color: "#71151a" }}>الفريق</h2>
-          <p className="text-muted-foreground">بدأت من سؤال بسيط — ماذا أدرس؟ — وتحوّلت إلى أداة يستحقها كل طالب.</p>
         </Reveal>
         <div className="flex justify-center mb-10">
           <a
