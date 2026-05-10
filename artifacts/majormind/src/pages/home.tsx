@@ -54,10 +54,10 @@ const FEATURES = [
 ];
 
 const STATS = [
-  { value: "٨–١٢", label: "سؤالاً في كل مقابلة" },
-  { value: "+١٠٠", label: "تخصص جامعي مغطى" },
-  { value: "٣ دقائق", label: "متوسط وقت الجلسة" },
-  { value: "مجاني", label: "دائماً، بلا بطاقة ائتمان" },
+  { label: "سؤالاً في كل مقابلة", display: "٨–١٢", countTo: null },
+  { label: "تخصص جامعي مغطى",    display: "+١٠٠",  countTo: 100, prefix: "+", arabicDigits: true },
+  { label: "متوسط وقت الجلسة",   display: "٣ دق",   countTo: 3,   suffix: " دق", arabicDigits: true },
+  { label: "دائماً، بلا بطاقة ائتمان", display: "مجاني", countTo: null },
 ];
 
 function Reveal({
@@ -89,6 +89,95 @@ function Reveal({
   return (
     <div ref={ref} className={`reveal ${className}`}>
       {children}
+    </div>
+  );
+}
+
+const toArabicDigits = (n: number) =>
+  n.toString().replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[+d]);
+
+function StatCounter({
+  display,
+  countTo,
+  prefix = "",
+  suffix = "",
+  arabicDigits = false,
+  label,
+  delay = 0,
+}: {
+  display: string;
+  countTo: number | null;
+  prefix?: string;
+  suffix?: string;
+  arabicDigits?: boolean;
+  label: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [count, setCount] = useState(0);
+  const [started, setStarted] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transitionDelay = `${delay}ms`;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          if (countTo !== null && !started) setStarted(true);
+          obs.unobserve(el);
+        }
+      },
+      { threshold: 0.2 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [delay, countTo, started]);
+
+  useEffect(() => {
+    if (!started || countTo === null) return;
+    const duration = 1400;
+    const start = performance.now();
+    let raf: number;
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(eased * countTo);
+      setCount(current);
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [started, countTo]);
+
+  const displayValue =
+    countTo !== null
+      ? `${prefix}${arabicDigits ? toArabicDigits(count) : count}${suffix}`
+      : display;
+
+  return (
+    <div
+      ref={ref}
+      className="text-center space-y-2 reveal"
+      style={{ opacity: visible ? 1 : 0, transition: `opacity 0.5s ease ${delay}ms` }}
+    >
+      <div
+        className="font-black leading-none tracking-tight"
+        style={{
+          fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
+          background: "linear-gradient(135deg, #71151a 0%, #a0232c 60%, #71151a 100%)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {displayValue}
+      </div>
+      <div className="text-sm font-medium" style={{ color: "var(--muted)" }}>{label}</div>
     </div>
   );
 }
@@ -307,12 +396,18 @@ export default function Home() {
 
       {/* ── Stats bar ── */}
       <section className="border-y border-[--border] bg-[--surface-secondary]">
-        <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-4 gap-10">
           {STATS.map((stat, i) => (
-            <Reveal key={stat.label} delay={i * 80} className="text-center space-y-1">
-              <div className="text-3xl md:text-4xl font-serif" style={{ color: "#71151a" }}>{stat.value}</div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </Reveal>
+            <StatCounter
+              key={stat.label}
+              display={stat.display}
+              countTo={stat.countTo ?? null}
+              prefix={(stat as any).prefix}
+              suffix={(stat as any).suffix}
+              arabicDigits={(stat as any).arabicDigits}
+              label={stat.label}
+              delay={i * 120}
+            />
           ))}
         </div>
       </section>
