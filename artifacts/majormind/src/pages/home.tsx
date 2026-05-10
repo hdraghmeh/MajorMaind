@@ -636,7 +636,7 @@ export default function Home() {
 
       {/* ── Footer ── */}
       <footer style={{ background: "var(--surface-secondary)" }}>
-        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col items-center justify-center gap-3 text-center">
           <div className="flex items-center gap-2.5">
             <img src={logoUrl} alt="MajorMind" className="h-7 w-auto object-contain opacity-80" />
             <p className="text-sm text-muted-foreground">MajorMind &copy; 2026 — جميع الحقوق محفوظة</p>
