@@ -83,7 +83,7 @@ export default function Interview() {
       const profile = getStudentProfile();
       profileContextRef.current = profile?.name ? buildProfileContext(profile) : null;
     }
-  }, [params?.sessionId]);
+  }, [params?.sessionId, isAuthenticated, authLoading]);
 
   useEffect(() => {
     scrollToBottom();
