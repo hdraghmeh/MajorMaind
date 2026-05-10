@@ -21,7 +21,7 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
   const isHome = location === "/";
 
   const displayName = user
-    ? [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "Account"
+    ? [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "حسابي"
     : null;
 
   return (
@@ -49,7 +49,7 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
               onPress={() => setLocation("/")}
               className="text-[--muted] hover:text-[--foreground]"
             >
-              Home
+              الرئيسية
             </Button>
           )}
 
@@ -75,14 +75,14 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
                     <span className="hidden sm:block text-foreground max-w-[120px] truncate">{displayName}</span>
                   </button>
                 </DropdownTrigger>
-                <DropdownMenu aria-label="User menu">
+                <DropdownMenu aria-label="قائمة المستخدم">
                   <DropdownItem
                     key="logout"
                     startContent={<LogOut className="w-4 h-4" />}
                     onPress={logout}
                     className="text-foreground"
                   >
-                    Log out
+                    تسجيل الخروج
                   </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
@@ -93,7 +93,7 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
                 onPress={() => setLocation("/login")}
                 className="rounded-full px-4 font-medium flex items-center gap-1.5"
               >
-                Log in
+                تسجيل الدخول
               </Button>
             )
           )}
@@ -105,7 +105,7 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
               onPress={handleStart}
               className="rounded-full px-5 font-medium"
             >
-              Start Free Interview
+              ابدأ مجاناً
             </Button>
           )}
         </div>

@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { Button, Input } from "@heroui/react";
 import {
-  Users, Award, MessageSquare, Calendar,
-  ChevronRight, ChevronDown, ArrowLeft, Search,
+  Users, Award, MessageSquare,
+  ChevronRight, ArrowLeft, Search,
   RefreshCw, ShieldAlert, Mail, User, Hash
 } from "lucide-react";
 import logoUrl from "/logo.png";
@@ -49,7 +49,7 @@ function formatDate(iso: string) {
 }
 
 function studentName(rec: StudentRecord) {
-  if (!rec.user) return "Anonim";
+  if (!rec.user) return "زائر";
   const name = [rec.user.firstName, rec.user.lastName].filter(Boolean).join(" ");
   return name || rec.user.email || "مستخدم مسجّل";
 }
@@ -97,7 +97,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
           </div>
           <div>
             <h1 className="text-2xl font-serif" style={{ color: RED }}>
-              Admin Dashboard
+              لوحة الإدارة
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               أدخل كلمة السر للوصول للبيانات
@@ -114,7 +114,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
             type="password"
             value={token}
             onChange={(e) => { setToken(e.target.value); setError(false); }}
-            placeholder="Admin token"
+            placeholder="رمز المدير"
             className="w-full"
           />
           {error && (
@@ -140,8 +140,8 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
 function DetailPanel({ record, onClose }: { record: StudentRecord; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex" style={{ background: "rgba(0,0,0,0.45)" }}>
-      <div className="ml-auto h-full w-full max-w-2xl flex flex-col"
-        style={{ background: "var(--background)", boxShadow: "-4px 0 30px rgba(0,0,0,0.18)" }}>
+      <div className="mr-auto h-full w-full max-w-2xl flex flex-col"
+        style={{ background: "var(--background)", boxShadow: "4px 0 30px rgba(0,0,0,0.18)" }}>
 
         {/* Header */}
         <div className="flex items-center gap-3 px-6 py-4 border-b border-[--border]"
@@ -155,7 +155,7 @@ function DetailPanel({ record, onClose }: { record: StudentRecord; onClose: () =
             </p>
             <p className="text-xs text-muted-foreground">{formatDate(record.savedAt)}</p>
           </div>
-          <div className="shrink-0 text-right">
+          <div className="shrink-0 text-left">
             <span className="text-2xl font-bold" style={{ color: scoreColor(record.recommendation.matchScore) }}>
               {record.recommendation.matchScore}%
             </span>
@@ -170,7 +170,7 @@ function DetailPanel({ record, onClose }: { record: StudentRecord; onClose: () =
             <div className="rounded-xl border border-[--border] divide-y divide-[--border]"
               style={{ background: "var(--surface)" }}>
               <Row icon={User} label="الاسم" value={studentName(record)} />
-              <Row icon={Mail} label="البريد" value={record.user?.email ?? "ضيف"} />
+              <Row icon={Mail} label="البريد" value={record.user?.email ?? "زائر"} />
               <Row icon={Hash} label="رقم السجل" value={record.recordId} mono />
             </div>
           </section>
@@ -312,7 +312,7 @@ function Dashboard({ token }: { token: string }) {
               <img src={logoUrl} alt="MajorMind" className="h-8 w-auto object-contain" />
             </button>
             <div className="h-5 w-px" style={{ background: "var(--border)" }} />
-            <span className="text-sm font-semibold" style={{ color: RED }}>Admin Dashboard</span>
+            <span className="text-sm font-semibold" style={{ color: RED }}>لوحة الإدارة</span>
           </div>
           <button
             onClick={load}
@@ -331,7 +331,7 @@ function Dashboard({ token }: { token: string }) {
           {[
             { icon: Users, label: "إجمالي المقابلات", value: totalStudents },
             { icon: Award, label: "متوسط التوافق", value: `${avgScore}%` },
-            { icon: MessageSquare, label: "ضيوف (بدون تسجيل)", value: guests },
+            { icon: MessageSquare, label: "زوار (بدون تسجيل)", value: guests },
           ].map((stat) => (
             <div key={stat.label}
               className="rounded-2xl border border-[--border] px-5 py-5 flex items-center gap-4"
@@ -350,12 +350,12 @@ function Dashboard({ token }: { token: string }) {
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="ابحث بالاسم أو البريد أو التخصص..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[--border] text-sm outline-none focus:ring-2 transition-all"
+            className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-[--border] text-sm outline-none focus:ring-2 transition-all"
             style={{
               background: "var(--surface)",
               color: "var(--foreground)",
@@ -400,7 +400,7 @@ function Dashboard({ token }: { token: string }) {
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{studentName(rec)}</p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {rec.user?.email ?? "ضيف"} · {formatDate(rec.savedAt)}
+                      {rec.user?.email ?? "زائر"} · {formatDate(rec.savedAt)}
                     </p>
                   </div>
 
@@ -408,7 +408,7 @@ function Dashboard({ token }: { token: string }) {
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{rec.recommendation.recommendedMajor}</p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {rec.recommendation.alternativeMajors.slice(0, 2).join(", ")}
+                      {rec.recommendation.alternativeMajors.slice(0, 2).join("، ")}
                     </p>
                   </div>
 

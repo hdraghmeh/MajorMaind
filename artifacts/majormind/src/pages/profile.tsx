@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@heroui/react";
 import { getStudentProfile, saveStudentProfile, EMPTY_PROFILE, type StudentProfile, type TawjihiStream, type LearningStyle, type PersonalityType } from "@/lib/studentProfile";
-import { createSession } from "@/lib/sessions";
+import { createSession, getSession, saveSession } from "@/lib/sessions";
 import logoUrl from "/logo.png";
 import { ChevronRight, ChevronLeft, Check, User, BookOpen, Brain, Target } from "lucide-react";
 
@@ -10,24 +10,24 @@ const GREEN = "#84e4a8";
 const RED = "#71151a";
 
 const STREAMS: { value: TawjihiStream; label: string; labelAr: string }[] = [
-  { value: "scientific", label: "Scientific", labelAr: "علمي" },
-  { value: "literary", label: "Literary", labelAr: "أدبي" },
-  { value: "commercial", label: "Commercial", labelAr: "تجاري" },
-  { value: "industrial", label: "Industrial", labelAr: "صناعي" },
-  { value: "other", label: "Other", labelAr: "آخر" },
+  { value: "scientific", label: "scientific", labelAr: "علمي" },
+  { value: "literary", label: "literary", labelAr: "أدبي" },
+  { value: "commercial", label: "commercial", labelAr: "تجاري" },
+  { value: "industrial", label: "industrial", labelAr: "صناعي" },
+  { value: "other", label: "other", labelAr: "آخر" },
 ];
 
 const SUBJECTS = [
-  "Mathematics", "Physics", "Chemistry", "Biology",
-  "Arabic", "English", "History", "Geography",
-  "Computer Science", "Islamic Studies", "Art", "Economics",
+  "الرياضيات", "الفيزياء", "الكيمياء", "الأحياء",
+  "اللغة العربية", "اللغة الإنجليزية", "التاريخ", "الجغرافيا",
+  "الحاسوب والمعلوماتية", "التربية الإسلامية", "الفنون", "الاقتصاد",
 ];
 
 const CAREER_OPTIONS = [
-  "Technology & Programming", "Medicine & Healthcare", "Engineering",
-  "Business & Management", "Law", "Education & Teaching",
-  "Arts & Design", "Media & Communication", "Science & Research",
-  "Architecture", "Finance & Accounting", "Psychology & Social Work",
+  "التقنية والبرمجة", "الطب والرعاية الصحية", "الهندسة",
+  "الأعمال والإدارة", "القانون", "التعليم والتدريس",
+  "الفنون والتصميم", "الإعلام والتواصل", "العلوم والبحث",
+  "الهندسة المعمارية", "المالية والمحاسبة", "علم النفس والعمل الاجتماعي",
 ];
 
 const HOBBIES_OPTIONS = [
@@ -65,16 +65,16 @@ const CONCERNS_OPTIONS = [
 ];
 
 const LEARNING_STYLES: { value: LearningStyle; label: string; desc: string }[] = [
-  { value: "practical", label: "Practical", desc: "أتعلم بالتطبيق والتجربة" },
-  { value: "visual", label: "Visual", desc: "أتعلم بالصور والمخططات" },
-  { value: "reading", label: "Reading", desc: "أتعلم بالقراءة والكتابة" },
-  { value: "discussion", label: "Discussion", desc: "أتعلم بالنقاش والحوار" },
+  { value: "practical", label: "تطبيقي", desc: "أتعلم بالتطبيق والتجربة" },
+  { value: "visual", label: "بصري", desc: "أتعلم بالصور والمخططات" },
+  { value: "reading", label: "قراءة وكتابة", desc: "أتعلم بالقراءة والكتابة" },
+  { value: "discussion", label: "نقاش وحوار", desc: "أتعلم بالنقاش والحوار" },
 ];
 
 const PERSONALITIES: { value: PersonalityType; label: string; desc: string }[] = [
-  { value: "analytical", label: "Analytical", desc: "أحب التحليل والمنطق والأرقام" },
-  { value: "creative", label: "Creative", desc: "أحب الإبداع والأفكار الجديدة" },
-  { value: "balanced", label: "Balanced", desc: "بين الاثنين" },
+  { value: "analytical", label: "تحليلي", desc: "أحب التحليل والمنطق والأرقام" },
+  { value: "creative", label: "إبداعي", desc: "أحب الإبداع والأفكار الجديدة" },
+  { value: "balanced", label: "متوازن", desc: "بين الاثنين" },
 ];
 
 const STEPS = [
@@ -170,10 +170,27 @@ function Card({ selected, onClick, label, desc }: { selected: boolean; onClick: 
   );
 }
 
+const DRAFT_SESSION_KEY = "majormind.profile-draft-session-id";
+
 export default function Profile() {
   const [, setLocation] = useLocation();
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<StudentProfile>(() => getStudentProfile() ?? { ...EMPTY_PROFILE });
+
+  // Create or reuse a draft session for this profile form (lazy init, stable across renders)
+  const [draftSessionId] = useState<string>(() => {
+    const existing = localStorage.getItem(DRAFT_SESSION_KEY);
+    if (existing && getSession(existing)) return existing;
+    const s = createSession();
+    localStorage.setItem(DRAFT_SESSION_KEY, s.id);
+    return s.id;
+  });
+
+  const persistProfileToSession = (p: StudentProfile) => {
+    const existing = getSession(draftSessionId);
+    if (!existing) return;
+    saveSession({ ...existing, profileData: p as unknown as Record<string, unknown> });
+  };
 
   const set = <K extends keyof StudentProfile>(key: K, value: StudentProfile[K]) =>
     setProfile((p) => ({ ...p, [key]: value }));
@@ -185,10 +202,18 @@ export default function Profile() {
     });
   };
 
+  const handleNext = () => {
+    saveStudentProfile(profile);
+    persistProfileToSession(profile);
+    setStep(step + 1);
+  };
+
   const handleStart = () => {
     saveStudentProfile(profile);
-    const session = createSession();
-    setLocation(`/interview/${session.id}`);
+    persistProfileToSession(profile);
+    // Clear draft session so next profile visit creates a fresh one
+    localStorage.removeItem(DRAFT_SESSION_KEY);
+    setLocation(`/interview/${draftSessionId}`);
   };
 
   const canNext = () => {
@@ -274,7 +299,7 @@ export default function Profile() {
                 <FieldLabel>فرع التوجيهي *</FieldLabel>
                 <div className="flex flex-wrap gap-2">
                   {STREAMS.map((s) => (
-                    <Chip key={s.value} label={`${s.labelAr} (${s.label})`}
+                    <Chip key={s.value} label={s.labelAr}
                       selected={profile.tawjihiStream === s.value}
                       onClick={() => set("tawjihiStream", s.value)} />
                   ))}
@@ -445,7 +470,7 @@ export default function Profile() {
             <Button
               size="sm"
               isDisabled={!canNext()}
-              onPress={() => setStep(step + 1)}
+              onPress={handleNext}
               className="flex items-center gap-1.5"
               style={{ background: canNext() ? RED : undefined, color: canNext() ? "white" : undefined }}
             >

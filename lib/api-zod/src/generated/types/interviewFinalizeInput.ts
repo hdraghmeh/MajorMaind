@@ -10,4 +10,6 @@ import type { InterviewMessage } from "./interviewMessage";
 export interface InterviewFinalizeInput {
   /** The full transcript of the interview so far, oldest first. */
   messages: InterviewMessage[];
+  /** Optional session ID to link the finalized record to the active session. */
+  sessionId?: string;
 }

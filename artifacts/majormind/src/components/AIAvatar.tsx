@@ -6,12 +6,12 @@ export type AvatarState = "idle" | "thinking" | "speaking" | "result";
 const GREEN = "#84e4a8";
 
 const THINKING_LINES = [
-  "Analyzing your academic profile...",
-  "Matching personality patterns...",
-  "Finding best career paths for you...",
-  "Processing your response...",
-  "Building your academic portrait...",
-  "Mapping your strengths...",
+  "أحلّل ملفك الأكاديمي...",
+  "أرسم ملامح شخصيتك...",
+  "أستكشف المسارات المناسبة لك...",
+  "أعالج إجابتك...",
+  "أبني صورتك الأكاديمية...",
+  "أرسم خريطة نقاط قوتك...",
 ];
 
 // Waveform bar heights (relative, 0–1)
@@ -142,7 +142,7 @@ export default function AIAvatar({
         >
           <img
             src={logoUrl}
-            alt="AI Advisor"
+            alt="مستشار أكاديمي"
             style={{
               width: size * 0.58,
               height: size * 0.58,
@@ -181,12 +181,12 @@ export default function AIAvatar({
         {/* Text label — adapts to state */}
         {displayState === "idle" && !showWaveform && (
           <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-            AI Academic Advisor
+            المستشار الأكاديمي
           </p>
         )}
 
         {displayState === "idle" && showWaveform && (
-          <p className="text-xs italic text-muted-foreground">Speaking...</p>
+          <p className="text-xs italic text-muted-foreground">يتحدث...</p>
         )}
 
         {displayState === "thinking" && (
@@ -217,7 +217,7 @@ export default function AIAvatar({
               animation: "reaction-pop 0.45s ease forwards",
             }}
           >
-            {microReaction ?? "One moment..."}
+            {microReaction ?? "لحظة..."}
           </p>
         )}
 
@@ -226,7 +226,7 @@ export default function AIAvatar({
             className="text-sm font-semibold leading-snug text-center"
             style={{ color: "#71151a" }}
           >
-            Based on everything I've analyzed about you...
+            بناءً على كل ما حللته عنك...
           </p>
         )}
       </div>

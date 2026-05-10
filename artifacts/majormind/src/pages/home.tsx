@@ -1,62 +1,62 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { getSessions, createSession, loadSessionsFromServer, mergeServerSessions, backfillLocalSessionsToServer, type StoredSession } from "@/lib/sessions";
+import { getSessions, createSession, loadSessionsFromServer, mergeServerSessions, backfillLocalSessionsToServer, reconcileCompletedSessions, type StoredSession } from "@/lib/sessions";
 import { getStudentProfile } from "@/lib/studentProfile";
 import { Button, Card, CardContent, Chip } from "@heroui/react";
 import { useAuth } from "@workspace/replit-auth-web";
 import Navbar from "@/components/Navbar";
 import logoUrl from "/logo.png";
-import { ArrowRight, Brain, MessageSquare, Award, BookOpen, TrendingUp, Users, ChevronDown, UserCircle, Archive } from "lucide-react";
+import { ArrowLeft, Brain, MessageSquare, Award, BookOpen, TrendingUp, Users, ChevronDown, UserCircle, Archive } from "lucide-react";
 
 const STEPS = [
   {
     number: "01",
     icon: MessageSquare,
-    title: "A real conversation",
-    desc: "MajorMind asks you thoughtful questions one at a time — about your strengths, passions, and personality. No forms. No checkboxes.",
+    title: "محادثة حقيقية",
+    desc: "يطرح عليك MajorMind أسئلة مدروسة واحدة تلو الأخرى — عن نقاط قوتك وشغفك وشخصيتك. بلا نماذج. بلا خانات اختيار.",
   },
   {
     number: "02",
     icon: Brain,
-    title: "Deep analysis",
-    desc: "As you talk, our AI builds a hidden profile of your academic strengths, learning style, and career interests.",
+    title: "تحليل عميق",
+    desc: "أثناء حديثك، يبني مستشارنا الذكي ملفاً خفياً لنقاط قوتك الأكاديمية وأسلوب تعلمك واهتماماتك المهنية.",
   },
   {
     number: "03",
     icon: Award,
-    title: "Your personalized result",
-    desc: "You receive a recommended major, a match score, detailed reasoning, alternatives, and an actionable career roadmap.",
+    title: "نتيجتك الشخصية",
+    desc: "تحصل على التخصص الموصى به، ونسبة التوافق، والأسباب التفصيلية، والبدائل، وخارطة طريق مهنية قابلة للتنفيذ.",
   },
 ];
 
 const FEATURES = [
   {
     icon: BookOpen,
-    title: "Built for Tawjihi",
-    desc: "Designed specifically around the Palestinian Tawjihi system — scientific, literary, and all streams.",
+    title: "مصمم للتوجيهي",
+    desc: "مُصمَّم خصيصاً لطلاب التوجيهي الفلسطيني — العلمي والأدبي والتجاري والصناعي وجميع الفروع.",
   },
   {
     icon: Brain,
-    title: "AI-powered insight",
-    desc: "Uses advanced language AI to understand your answers in context, not just keywords. Speaks English and Arabic.",
+    title: "رؤية بالذكاء الاصطناعي",
+    desc: "يستخدم الذكاء الاصطناعي المتقدم لفهم إجاباتك في سياقها الكامل، لا مجرد كلمات مفتاحية. يتحدث العربية بطلاقة.",
   },
   {
     icon: TrendingUp,
-    title: "Career roadmap",
-    desc: "Beyond the major, you get concrete next steps: skills to build, courses to explore, and a clear academic direction.",
+    title: "خارطة طريق مهنية",
+    desc: "بعد التخصص مباشرةً، تحصل على خطوات ملموسة: مهارات تبنيها، مقررات تستكشفها، وتوجه أكاديمي واضح.",
   },
   {
     icon: Users,
-    title: "Private by default",
-    desc: "No account required. Sign in to save your sessions across devices — your data is never shared or sold.",
+    title: "خصوصية افتراضية",
+    desc: "لا حاجة لحساب. سجّل الدخول لحفظ جلساتك عبر الأجهزة — بياناتك لا تُشارك ولا تُباع.",
   },
 ];
 
 const STATS = [
-  { value: "8–12", label: "Questions per interview" },
-  { value: "100+", label: "University majors covered" },
-  { value: "3 min", label: "Average session time" },
-  { value: "Free", label: "Always, no credit card" },
+  { value: "٨–١٢", label: "سؤالاً في كل مقابلة" },
+  { value: "+١٠٠", label: "تخصص جامعي مغطى" },
+  { value: "٣ دقائق", label: "متوسط وقت الجلسة" },
+  { value: "مجاني", label: "دائماً، بلا بطاقة ائتمان" },
 ];
 
 function Reveal({
@@ -135,6 +135,8 @@ export default function Home() {
         if (!active) return;
         await backfillLocalSessionsToServer(serverSessions);
         await mergeServerSessions(serverSessions);
+        // Recover completed status for sessions whose final sync may have failed
+        await reconcileCompletedSessions();
       }
 
       if (!active) return;
@@ -154,7 +156,6 @@ export default function Home() {
   const hasProfile = !!getStudentProfile()?.name;
 
   const handleStart = () => {
-    // Send to profile setup first if not filled; otherwise straight to interview
     if (!hasProfile) {
       setLocation("/profile");
     } else {
@@ -176,7 +177,6 @@ export default function Home() {
         ref={heroRef}
         className="relative min-h-[100dvh] flex flex-col items-center justify-center text-center px-6 pt-16 overflow-hidden"
       >
-        {/* Animated background orbs */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
           <div
             className="animate-orb-drift absolute top-1/4 left-1/2 w-[680px] h-[680px] rounded-full opacity-[0.16]"
@@ -193,7 +193,6 @@ export default function Home() {
         </div>
 
         <div className="relative max-w-4xl mx-auto space-y-8">
-          {/* Floating logo */}
           <img
             src={logoUrl}
             alt="MajorMind"
@@ -201,23 +200,22 @@ export default function Home() {
           />
 
           <div className="space-y-5 animate-in fade-in slide-in-from-bottom-6 duration-700">
-            {/* Live badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[--accent]/40 bg-[--accent]/10 text-sm font-medium" style={{ color: "var(--accent-foreground)" }}>
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: "var(--accent)" }} />
                 <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "var(--accent)" }} />
               </span>
-              AI Academic Advisor for Tawjihi Students
+              مستشار أكاديمي بالذكاء الاصطناعي لطلاب التوجيهي
             </div>
 
             <h1 className="text-5xl md:text-7xl font-serif leading-tight tracking-tight">
-              <span className="gradient-text">Think smarter</span>
+              <span className="gradient-text">فكّر بذكاء</span>
               <br />
-              <span className="text-foreground">about your future.</span>
+              <span className="text-foreground">في مستقبلك.</span>
             </h1>
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-light">
-              MajorMind has a real conversation with you — about your strengths, interests, and ambitions — then recommends the university major you were made for.
+              يجري MajorMind محادثة حقيقية معك — عن نقاط قوتك واهتماماتك وطموحاتك — ثم يوصيك بالتخصص الجامعي الذي وُلدت له.
             </p>
           </div>
 
@@ -227,8 +225,8 @@ export default function Home() {
               size="lg"
               className="btn-shimmer px-8 py-6 text-lg rounded-full group"
             >
-              {hasProfile ? "Start your free interview" : "Set up your profile & start"}
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-200" />
+              {hasProfile ? "ابدأ مقابلتك المجانية" : "أعدّ ملفك وابدأ"}
+              <ArrowLeft className="mr-2 w-5 h-5 group-hover:-translate-x-1.5 transition-transform duration-200" />
             </Button>
             {hasProfile && (
               <Button
@@ -238,7 +236,7 @@ export default function Home() {
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
               >
                 <UserCircle className="w-4 h-4" />
-                Edit profile
+                تعديل الملف الشخصي
               </Button>
             )}
             <Button
@@ -247,7 +245,7 @@ export default function Home() {
               onPress={scrollToHow}
               className="px-8 py-6 text-lg rounded-full"
             >
-              How it works
+              كيف يعمل؟
             </Button>
           </div>
 
@@ -257,14 +255,14 @@ export default function Home() {
                 onClick={() => setLocation("/login")}
                 className="inline-flex items-center gap-1.5 underline underline-offset-2 hover:text-foreground transition-colors"
               >
-                Sign in to save your sessions across devices
+                سجّل الدخول لحفظ جلساتك عبر الأجهزة
               </button>
             </p>
           )}
 
           {sessions.length > 0 && (
             <p className="text-sm text-muted-foreground animate-in fade-in duration-1000 delay-500">
-              You have {sessions.length} previous session{sessions.length > 1 ? "s" : ""} —{" "}
+              لديك {sessions.length} جلسة{sessions.length > 1 ? "" : ""} سابقة —{" "}
               <button
                 onClick={() => {
                   if (!showSessions) {
@@ -276,7 +274,7 @@ export default function Home() {
                 }}
                 className="underline underline-offset-2 hover:text-foreground transition-colors"
               >
-                resume one
+                استئناف إحداها
               </button>
             </p>
           )}
@@ -285,7 +283,7 @@ export default function Home() {
         <button
           onClick={scrollToHow}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 text-muted-foreground hover:text-foreground transition-colors animate-bounce"
-          aria-label="Scroll down"
+          aria-label="تمرير لأسفل"
         >
           <ChevronDown className="w-6 h-6" />
         </button>
@@ -306,9 +304,9 @@ export default function Home() {
       {/* ── How it works ── */}
       <section id="how-it-works" className="max-w-6xl mx-auto px-6 py-24 space-y-16">
         <Reveal className="text-center space-y-4">
-          <h2 className="text-4xl md:text-5xl font-serif" style={{ color: "#71151a" }}>How it works</h2>
+          <h2 className="text-4xl md:text-5xl font-serif" style={{ color: "#71151a" }}>كيف يعمل؟</h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Three simple steps from "I don't know what to study" to a clear, data-backed direction.
+            ثلاث خطوات بسيطة من "لا أعرف ماذا أدرس" إلى توجه واضح ومدعوم بالبيانات.
           </p>
         </Reveal>
 
@@ -347,9 +345,9 @@ export default function Home() {
       <section className="border-y border-[--border]" style={{ background: "var(--surface-secondary)" }}>
         <div className="max-w-6xl mx-auto px-6 py-24 space-y-16">
           <Reveal className="text-center space-y-4">
-            <h2 className="text-4xl md:text-5xl font-serif" style={{ color: "#71151a" }}>Why MajorMind</h2>
+            <h2 className="text-4xl md:text-5xl font-serif" style={{ color: "#71151a" }}>لماذا MajorMind؟</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Built from the ground up for students navigating the most important decision of their academic life.
+              مبني من الصفر لطلاب يواجهون أهم قرار في حياتهم الأكاديمية.
             </p>
           </Reveal>
 
@@ -398,10 +396,10 @@ export default function Home() {
             </div>
             <div className="relative space-y-4">
               <h2 className="text-4xl md:text-5xl font-serif text-white" style={{ color: "white" }}>
-                Your future starts with one conversation.
+                مستقبلك يبدأ بمحادثة واحدة.
               </h2>
               <p className="text-xl font-light max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.72)" }}>
-                It takes less than three minutes. No signup, no cost, no pressure.
+                تستغرق أقل من ثلاث دقائق. بلا تسجيل، بلا تكلفة، بلا ضغط.
               </p>
             </div>
             <div className="relative">
@@ -410,8 +408,8 @@ export default function Home() {
                 size="lg"
                 className="btn-shimmer px-10 py-6 text-lg rounded-full group"
               >
-                Begin your interview now
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-200" />
+                ابدأ مقابلتك الآن
+                <ArrowLeft className="mr-2 w-5 h-5 group-hover:-translate-x-1.5 transition-transform duration-200" />
               </Button>
             </div>
           </div>
@@ -421,20 +419,19 @@ export default function Home() {
       {/* ── Session Archive ── */}
       {sessions.length > 0 && (
         <section id="sessions" className="max-w-6xl mx-auto px-6 pb-24">
-          {/* Toggle trigger */}
           <button
             onClick={() => toggleSessions()}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4 group"
             aria-expanded={showSessions}
           >
             <Archive className="w-3.5 h-3.5 opacity-60" />
-            <span>Session archive</span>
+            <span>أرشيف الجلسات</span>
             <span className="px-1.5 py-0.5 text-xs rounded-full bg-[--surface-secondary] border border-[--border] leading-none">
               {sessions.length}
             </span>
             {isAuthenticated && (
               <span className="text-xs text-muted-foreground bg-[--surface-secondary] px-2 py-0.5 rounded-full border border-[--border] leading-none">
-                Synced
+                متزامن
               </span>
             )}
             <ChevronDown
@@ -443,7 +440,6 @@ export default function Home() {
             />
           </button>
 
-          {/* Animated sessions grid */}
           <div
             className="overflow-hidden transition-all duration-500 ease-in-out"
             style={{
@@ -463,9 +459,9 @@ export default function Home() {
                       <CardContent className="p-5 flex items-center justify-between gap-4">
                         <div className="space-y-1 min-w-0">
                           <p className="font-medium text-foreground truncate">
-                            {session.title || `Interview · ${new Date(session.createdAt).toLocaleDateString()}`}
+                            {session.title || `مقابلة · ${new Date(session.createdAt).toLocaleDateString("ar-SA")}`}
                           </p>
-                          <p className="text-sm text-muted-foreground">{new Date(session.updatedAt).toLocaleString()}</p>
+                          <p className="text-sm text-muted-foreground">{new Date(session.updatedAt).toLocaleString("ar-SA")}</p>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                           <Chip
@@ -473,9 +469,9 @@ export default function Home() {
                             variant="soft"
                             size="sm"
                           >
-                            {isComplete ? "Complete" : "In Progress"}
+                            {isComplete ? "مكتملة" : "قيد التقدم"}
                           </Chip>
-                          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                          <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:-translate-x-1 transition-all" />
                         </div>
                       </CardContent>
                     </Card>
@@ -493,13 +489,13 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <img src={logoUrl} alt="MajorMind" className="h-10 w-auto object-contain" />
             <div>
-              <p className="font-serif text-sm font-semibold" style={{ color: "#71151a" }}>Think smarter about your future.</p>
-              <p className="text-xs text-muted-foreground">AI Academic System</p>
+              <p className="font-serif text-sm font-semibold" style={{ color: "#71151a" }}>فكّر بذكاء في مستقبلك.</p>
+              <p className="text-xs text-muted-foreground">نظام إرشاد أكاديمي بالذكاء الاصطناعي</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <p className="text-sm text-muted-foreground text-center">Built for Tawjihi students. Sign in to sync your sessions.</p>
-            <Link href="/admin" className="text-xs text-muted-foreground opacity-30 hover:opacity-70 transition-opacity">Admin</Link>
+            <p className="text-sm text-muted-foreground text-center">مبني لطلاب التوجيهي. سجّل الدخول لمزامنة جلساتك.</p>
+            <Link href="/admin" className="text-xs text-muted-foreground opacity-30 hover:opacity-70 transition-opacity">لوحة الإدارة</Link>
           </div>
         </div>
       </footer>

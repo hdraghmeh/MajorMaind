@@ -29,11 +29,15 @@ export interface InterviewTurnInput {
   forceFinalize?: boolean;
   /** Optional pre-filled student profile context to inject into the AI system prompt. */
   profileContext?: string;
+  /** Optional session ID to associate the completed interview record with this session. */
+  sessionId?: string;
 }
 
 export interface InterviewFinalizeInput {
   /** The full transcript of the interview so far, oldest first. */
   messages: InterviewMessage[];
+  /** Optional session ID to link the finalized record to the active session. */
+  sessionId?: string;
 }
 
 /**
@@ -61,6 +65,10 @@ export interface InterviewRecommendation {
   academicStrengths: string[];
   careerAdvice: string[];
   closingMessage: string;
+  /**
+   * Optional note about AAUP admission requirements and GPA eligibility.
+   * @nullable
+   */
   admissionNote?: string | null;
 }
 
@@ -88,12 +96,48 @@ export interface InterviewError {
   error: string;
 }
 
+/**
+ * @nullable
+ */
+export type InterviewResultRecordUser = {
+  id?: string;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  firstName?: string | null;
+  /** @nullable */
+  lastName?: string | null;
+} | null;
+
+/**
+ * A completed interview record stored in the database.
+ */
+export interface InterviewResultRecord {
+  /**
+   * The session ID this record is linked to.
+   * @nullable
+   */
+  sessionId?: string | null;
+  recommendation?: InterviewRecommendation;
+  fullConversation?: InterviewMessage[];
+  savedAt?: string;
+  /** @nullable */
+  user?: InterviewResultRecordUser;
+}
+
+/**
+ * Optional profile form data captured at each step.
+ */
+export type InterviewSessionDataProfileData = { [key: string]: unknown } | null;
+
 export interface InterviewSessionData {
   id: string;
   createdAt: string;
   updatedAt: string;
   /** @nullable */
   title?: string | null;
+  /** Optional profile form data captured at each step. */
+  profileData?: InterviewSessionDataProfileData;
   messages: InterviewMessage[];
   progress?: InterviewProgress | null;
   recommendation?: InterviewRecommendation | null;

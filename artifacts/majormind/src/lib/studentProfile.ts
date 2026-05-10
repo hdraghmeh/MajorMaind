@@ -62,25 +62,25 @@ export function clearStudentProfile(): void {
   localStorage.removeItem(PROFILE_KEY);
 }
 
-/** Build a compact context string to inject into the AI system prompt */
+/** Build a compact Arabic context string to inject into the AI system prompt */
 export function buildProfileContext(profile: StudentProfile): string {
-  const lines: string[] = ["[STUDENT PROFILE — use this to personalise the interview, skip topics already answered]"];
+  const lines: string[] = ["[ملف الطالب — استخدم هذا لتخصيص المقابلة، وتجاهل الأسئلة التي تمت الإجابة عنها]"];
 
-  if (profile.name) lines.push(`Name: ${profile.name}`);
-  if (profile.age) lines.push(`Age: ${profile.age}`);
-  if (profile.city) lines.push(`City: ${profile.city}, Palestine`);
-  if (profile.tawjihiStream) lines.push(`Tawjihi stream: ${profile.tawjihiStream}`);
-  if (profile.tawjihiAverage) lines.push(`Tawjihi average: ${profile.tawjihiAverage}%`);
-  if (profile.favoriteSubjects.length) lines.push(`Favourite subjects: ${profile.favoriteSubjects.join(", ")}`);
-  if (profile.leastFavoriteSubjects.length) lines.push(`Least favourite subjects: ${profile.leastFavoriteSubjects.join(", ")}`);
-  if (profile.learningStyle) lines.push(`Learning style: ${profile.learningStyle}`);
-  if (profile.personality) lines.push(`Personality: ${profile.personality}`);
-  if (profile.careerInterests.length) lines.push(`Career interests: ${profile.careerInterests.join(", ")}`);
-  const hobbiesArr = Array.isArray(profile.hobbies) ? profile.hobbies : (profile.hobbies ? [profile.hobbies] : []);
-  if (hobbiesArr.length) lines.push(`Hobbies / passions: ${hobbiesArr.join(", ")}`);
-  if (profile.workPreference) lines.push(`Work preference: ${profile.workPreference}`);
-  if (profile.aspirations) lines.push(`Long-term aspirations: ${profile.aspirations}`);
-  if (profile.concerns) lines.push(`Main concerns about the future: ${profile.concerns}`);
+  if (profile.name) lines.push(`الاسم: ${profile.name}`);
+  if (profile.age) lines.push(`العمر: ${profile.age}`);
+  if (profile.city) lines.push(`المدينة: ${profile.city}، فلسطين`);
+  if (profile.tawjihiStream) lines.push(`مسار التوجيهي: ${profile.tawjihiStream}`);
+  if (profile.tawjihiAverage) lines.push(`معدل التوجيهي: ${profile.tawjihiAverage}%`);
+  if (profile.favoriteSubjects.length) lines.push(`المواد المفضلة: ${profile.favoriteSubjects.join("، ")}`);
+  if (profile.leastFavoriteSubjects.length) lines.push(`المواد الأقل تفضيلاً: ${profile.leastFavoriteSubjects.join("، ")}`);
+  if (profile.learningStyle) lines.push(`أسلوب التعلم: ${profile.learningStyle}`);
+  if (profile.personality) lines.push(`الشخصية: ${profile.personality}`);
+  if (profile.careerInterests.length) lines.push(`الاهتمامات المهنية: ${profile.careerInterests.join("، ")}`);
+  const hobbiesArr = Array.isArray(profile.hobbies) ? profile.hobbies : (profile.hobbies ? [profile.hobbies as unknown as string] : []);
+  if (hobbiesArr.length) lines.push(`الهوايات والاهتمامات: ${hobbiesArr.join("، ")}`);
+  if (profile.workPreference) lines.push(`تفضيل بيئة العمل: ${profile.workPreference}`);
+  if (profile.aspirations) lines.push(`الطموحات المستقبلية: ${profile.aspirations}`);
+  if (profile.concerns) lines.push(`أبرز المخاوف بشأن المستقبل: ${profile.concerns}`);
 
   return lines.join("\n");
 }

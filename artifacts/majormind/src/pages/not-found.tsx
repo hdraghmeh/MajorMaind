@@ -7,14 +7,14 @@ export default function NotFound() {
       <div className="max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
         <div className="space-y-4">
           <h1 className="text-6xl font-serif text-destructive">404</h1>
-          <h2 className="text-2xl font-serif text-foreground">Page Not Found</h2>
+          <h2 className="text-2xl font-serif text-foreground">الصفحة غير موجودة</h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            It seems you've wandered off the academic path. Let's get you back to your interview.
+            يبدو أنك ابتعدت عن مسارك الأكاديمي. دعنا نعيدك إلى المقابلة.
           </p>
         </div>
         <Link href="/">
           <Button size="lg" className="rounded-full px-8 font-serif">
-            Return to Home
+            العودة إلى الرئيسية
           </Button>
         </Link>
       </div>

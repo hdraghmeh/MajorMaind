@@ -24,6 +24,7 @@ import type {
   HealthStatus,
   InterviewError,
   InterviewFinalizeInput,
+  InterviewResultRecord,
   InterviewSessionData,
   InterviewSessionList,
   InterviewTurn,
@@ -379,6 +380,102 @@ export const useFinalizeInterview = <
 > => {
   return useMutation(getFinalizeInterviewMutationOptions(options));
 };
+
+/**
+ * Returns the completed interview record stored in the database for the given session ID.
+For authenticated-user sessions, the caller must be the same user who conducted the interview.
+For guest sessions, the caller must hold the per-session claim cookie set when the session was created.
+
+ * @summary Retrieve a completed interview result by session ID
+ */
+export const getGetInterviewResultUrl = (sessionId: string) => {
+  return `/api/interview-result/${sessionId}`;
+};
+
+export const getInterviewResult = async (
+  sessionId: string,
+  options?: RequestInit,
+): Promise<InterviewResultRecord> => {
+  return customFetch<InterviewResultRecord>(
+    getGetInterviewResultUrl(sessionId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetInterviewResultQueryKey = (sessionId: string) => {
+  return [`/api/interview-result/${sessionId}`] as const;
+};
+
+export const getGetInterviewResultQueryOptions = <
+  TData = Awaited<ReturnType<typeof getInterviewResult>>,
+  TError = ErrorType<InterviewError>,
+>(
+  sessionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getInterviewResult>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetInterviewResultQueryKey(sessionId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getInterviewResult>>
+  > = ({ signal }) =>
+    getInterviewResult(sessionId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!sessionId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getInterviewResult>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetInterviewResultQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getInterviewResult>>
+>;
+export type GetInterviewResultQueryError = ErrorType<InterviewError>;
+
+/**
+ * @summary Retrieve a completed interview result by session ID
+ */
+
+export function useGetInterviewResult<
+  TData = Awaited<ReturnType<typeof getInterviewResult>>,
+  TError = ErrorType<InterviewError>,
+>(
+  sessionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getInterviewResult>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetInterviewResultQueryOptions(sessionId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary Get the currently authenticated user

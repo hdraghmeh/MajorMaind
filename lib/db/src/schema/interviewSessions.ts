@@ -1,18 +1,19 @@
-import { jsonb, pgTable, primaryKey, timestamp, varchar } from "drizzle-orm/pg-core";
+import { jsonb, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
 import { usersTable } from "./auth";
 
-export const interviewSessionsTable = pgTable(
-  "interview_sessions",
-  {
-    id: varchar("id").notNull(),
-    userId: varchar("user_id")
-      .notNull()
-      .references(() => usersTable.id, { onDelete: "cascade" }),
-    data: jsonb("data").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
-  },
-  (table) => [primaryKey({ columns: [table.userId, table.id] })],
-);
+export const interviewSessionsTable = pgTable("interview_sessions", {
+  id: varchar("id").primaryKey(),
+  userId: varchar("user_id").references(() => usersTable.id, {
+    onDelete: "set null",
+  }),
+  data: jsonb("data").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
 
 export type InterviewSessionRow = typeof interviewSessionsTable.$inferSelect;

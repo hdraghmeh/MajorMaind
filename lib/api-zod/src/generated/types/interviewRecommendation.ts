@@ -18,5 +18,9 @@ export interface InterviewRecommendation {
   academicStrengths: string[];
   careerAdvice: string[];
   closingMessage: string;
+  /**
+   * Optional note about AAUP admission requirements and GPA eligibility.
+   * @nullable
+   */
   admissionNote?: string | null;
 }

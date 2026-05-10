@@ -8,6 +8,7 @@
 import type { InterviewMessage } from "./interviewMessage";
 import type { InterviewProgress } from "./interviewProgress";
 import type { InterviewRecommendation } from "./interviewRecommendation";
+import type { InterviewSessionDataProfileData } from "./interviewSessionDataProfileData";
 
 export interface InterviewSessionData {
   id: string;
@@ -15,6 +16,8 @@ export interface InterviewSessionData {
   updatedAt: string;
   /** @nullable */
   title?: string | null;
+  /** Optional profile form data captured at each step. */
+  profileData?: InterviewSessionDataProfileData;
   messages: InterviewMessage[];
   progress?: InterviewProgress | null;
   recommendation?: InterviewRecommendation | null;

@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useRoute, useLocation } from "wouter";
-import { getSession, createSession, type StoredSession } from "@/lib/sessions";
+import { getSession, saveSession, loadSessionsFromServer, mergeServerSessions, createSession, type StoredSession } from "@/lib/sessions";
 import { Button, Card, CardContent, CardHeader, CardTitle, Chip } from "@heroui/react";
-import { ArrowLeft, Copy, Download, GraduationCap, Lightbulb, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowRight, Copy, Download, GraduationCap, Lightbulb, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import logoUrl from "/logo.png";
 
 const CLEAN = (s: string) => s.replace(/[\u{1F300}-\u{1F9FF}]/gu, "").trim();
-const IS_AR = (s: string) => /[\u0600-\u06FF]/.test(s);
 
 function useCountUp(target: number, duration = 1200) {
   const [count, setCount] = useState(0);
@@ -75,16 +74,77 @@ export default function Result() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [session, setSession] = useState<StoredSession | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!params?.sessionId) return;
-    const s = getSession(params.sessionId);
-    if (!s) { setLocation("/"); return; }
-    if (!s.recommendation) { setLocation(`/interview/${s.id}`); return; }
-    setSession(s);
+
+    async function loadSession() {
+      const sessionId = params!.sessionId;
+
+      // 1. Try local storage first
+      let s = getSession(sessionId);
+
+      // 2. If not found locally or missing recommendation, try syncing from server (interview_sessions table)
+      if (!s || !s.recommendation) {
+        try {
+          const serverSessions = await loadSessionsFromServer();
+          if (serverSessions.length > 0) {
+            await mergeServerSessions(serverSessions);
+            s = getSession(sessionId);
+          }
+        } catch {
+          // ignore server errors
+        }
+      }
+
+      // 3. If still no recommendation, try the completed_interviews table by sessionId
+      if (!s?.recommendation) {
+        try {
+          const res = await fetch(`/api/interview-result/${encodeURIComponent(sessionId)}`);
+          if (res.ok) {
+            const record = await res.json() as {
+              recommendation: NonNullable<StoredSession["recommendation"]>;
+              fullConversation: StoredSession["messages"];
+              sessionId: string;
+              savedAt: string;
+            };
+            if (record.recommendation) {
+              const recovered: StoredSession = s ?? {
+                id: sessionId,
+                createdAt: record.savedAt,
+                updatedAt: record.savedAt,
+                messages: record.fullConversation ?? [],
+              };
+              recovered.recommendation = record.recommendation;
+              s = recovered;
+              // Persist recovered session to localStorage so repeat loads are instant
+              saveSession(recovered);
+            }
+          }
+        } catch {
+          // ignore fallback errors
+        }
+      }
+
+      if (!s) { setLoading(false); setLocation("/"); return; }
+      if (!s.recommendation) { setLoading(false); setLocation(`/interview/${s.id}`); return; }
+      setSession(s);
+      setLoading(false);
+    }
+
+    loadSession();
   }, [params?.sessionId]);
 
   const countedScore = useCountUp(session?.recommendation?.matchScore ?? 0, 1400);
+
+  if (loading) {
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
+        <div className="text-sm text-muted-foreground animate-pulse">جاري تحميل نتائجك...</div>
+      </div>
+    );
+  }
 
   if (!session || !session.recommendation) return null;
   const { recommendation: r } = session;
@@ -96,16 +156,16 @@ export default function Result() {
 
   const handleCopy = () => {
     const text = [
-      `Recommended Major: ${r.recommendedMajor}`,
-      `Match Score: ${r.matchScore}%`,
-      `\nWhy it fits:\n${r.whyItFits.map((x) => `- ${x}`).join("\n")}`,
-      `\nAlternative Majors:\n${r.alternativeMajors.map((x) => `- ${x}`).join("\n")}`,
-      `\nAcademic Strengths:\n${r.academicStrengths.map((x) => `- ${x}`).join("\n")}`,
-      `\nCareer Advice:\n${r.careerAdvice.map((x) => `- ${x}`).join("\n")}`,
-      `\nAdvisor's Note:\n${r.closingMessage}`,
+      `التخصص الموصى به: ${r.recommendedMajor}`,
+      `نسبة التوافق: ${r.matchScore}%`,
+      `\nلماذا يناسبك:\n${r.whyItFits.map((x) => `- ${x}`).join("\n")}`,
+      `\nالتخصصات البديلة:\n${r.alternativeMajors.map((x) => `- ${x}`).join("\n")}`,
+      `\nنقاط القوة الأكاديمية:\n${r.academicStrengths.map((x) => `- ${x}`).join("\n")}`,
+      `\nالنصائح المهنية:\n${r.careerAdvice.map((x) => `- ${x}`).join("\n")}`,
+      `\nرسالة المستشار:\n${r.closingMessage}`,
     ].join("\n");
     navigator.clipboard.writeText(text);
-    toast({ title: "Copied to clipboard" });
+    toast({ title: "تم النسخ إلى الحافظة" });
   };
 
   const handleDownload = () => {
@@ -113,7 +173,7 @@ export default function Result() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `majormind-${r.recommendedMajor.replace(/\s+/g, "-").toLowerCase()}-${session.id.slice(0, 8)}.json`;
+    a.download = `majormind-${r.recommendedMajor.replace(/\s+/g, "-")}-${session.id.slice(0, 8)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -138,20 +198,20 @@ export default function Result() {
               variant="ghost"
               size="sm"
               onPress={() => setLocation("/")}
-              className="text-muted-foreground hover:text-foreground -ml-2"
+              className="text-muted-foreground hover:text-foreground -mr-2"
             >
-              <ArrowLeft className="w-4 h-4 mr-1.5" /> Home
+              <ArrowRight className="w-4 h-4 ml-1.5" /> الرئيسية
             </Button>
             <img src={logoUrl} alt="MajorMind" className="h-7 w-auto object-contain hidden sm:block opacity-70" />
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onPress={handleCopy}>
-              <Copy className="w-3.5 h-3.5 sm:mr-1.5" />
-              <span className="hidden sm:inline">Copy</span>
+              <Copy className="w-3.5 h-3.5 sm:ml-1.5" />
+              <span className="hidden sm:inline">نسخ</span>
             </Button>
             <Button variant="outline" size="sm" onPress={handleDownload}>
-              <Download className="w-3.5 h-3.5 sm:mr-1.5" />
-              <span className="hidden sm:inline">Export</span>
+              <Download className="w-3.5 h-3.5 sm:ml-1.5" />
+              <span className="hidden sm:inline">تصدير</span>
             </Button>
           </div>
         </div>
@@ -170,10 +230,10 @@ export default function Result() {
             }}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            Your AI-powered result
+            نتيجتك بالذكاء الاصطناعي
           </div>
           <h1 className="text-3xl md:text-4xl font-serif text-foreground" style={{ color: "#71151a" }}>
-            Recommended Major
+            التخصص الموصى به
           </h1>
         </FadeIn>
 
@@ -189,27 +249,27 @@ export default function Result() {
             />
             <div className="relative flex items-start justify-between gap-4">
               <div className="space-y-2 flex-1 min-w-0">
-                <p className="text-white/60 text-xs font-semibold tracking-widest uppercase">Top Match</p>
+                <p className="text-white/60 text-xs font-semibold tracking-widest uppercase">الأفضل توافقاً</p>
                 <h2
                   className="text-2xl md:text-3xl font-bold text-white leading-tight"
-                  style={{ direction: IS_AR(r.recommendedMajor) ? "rtl" : "ltr", color: "white" }}
+                  style={{ direction: "rtl", color: "white" }}
                 >
                   {CLEAN(r.recommendedMajor)}
                 </h2>
                 {r.whyItFits[0] && (
                   <p
                     className="text-sm leading-relaxed"
-                    style={{ color: "rgba(255,255,255,0.72)", direction: IS_AR(r.whyItFits[0]) ? "rtl" : "ltr" }}
+                    style={{ color: "rgba(255,255,255,0.72)", direction: "rtl" }}
                   >
                     {CLEAN(r.whyItFits[0])}
                   </p>
                 )}
               </div>
-              <div className="shrink-0 text-right">
+              <div className="shrink-0 text-left">
                 <div className="text-5xl md:text-6xl font-bold leading-none tabular-nums" style={{ color: "white" }}>
                   {countedScore}<span className="text-2xl" style={{ color: "rgba(255,255,255,0.65)" }}>%</span>
                 </div>
-                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>Match score</p>
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>نسبة التوافق</p>
               </div>
             </div>
             {r.admissionNote && (
@@ -220,7 +280,7 @@ export default function Result() {
                 <GraduationCap className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "rgba(255,255,255,0.75)" }} />
                 <p
                   className="text-sm leading-relaxed"
-                  style={{ color: "rgba(255,255,255,0.85)", direction: IS_AR(r.admissionNote) ? "rtl" : "ltr" }}
+                  style={{ color: "rgba(255,255,255,0.85)", direction: "rtl" }}
                 >
                   {CLEAN(r.admissionNote)}
                 </p>
@@ -242,7 +302,7 @@ export default function Result() {
                   >
                     <GraduationCap className="w-4 h-4" style={{ color: "var(--accent-foreground)" }} />
                   </div>
-                  Why this major?
+                  لماذا هذا التخصص؟
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
@@ -250,7 +310,7 @@ export default function Result() {
                   {r.whyItFits.slice(1).map((reason, i) => (
                     <li key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground leading-relaxed">
                       <div className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "var(--accent)" }} />
-                      <span style={{ direction: IS_AR(reason) ? "rtl" : "ltr" }}>{CLEAN(reason)}</span>
+                      <span style={{ direction: "rtl" }}>{CLEAN(reason)}</span>
                     </li>
                   ))}
                 </ul>
@@ -269,13 +329,13 @@ export default function Result() {
                   >
                     <Lightbulb className="w-4 h-4" style={{ color: "var(--accent-foreground)" }} />
                   </div>
-                  Advice for you
+                  نصائح لك
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0 space-y-5">
                 <ul className="space-y-2">
                   {r.careerAdvice.slice(0, 3).map((advice, i) => (
-                    <li key={i} className="text-sm text-muted-foreground leading-relaxed" style={{ direction: IS_AR(advice) ? "rtl" : "ltr" }}>
+                    <li key={i} className="text-sm text-muted-foreground leading-relaxed" style={{ direction: "rtl" }}>
                       {CLEAN(advice)}
                     </li>
                   ))}
@@ -287,7 +347,7 @@ export default function Result() {
                 >
                   <div className="flex items-center gap-2 text-sm font-medium" style={{ color: "#71151a" }}>
                     <TrendingUp className="w-4 h-4" style={{ color: "var(--accent-foreground)" }} />
-                    Academic strengths
+                    نقاط القوة الأكاديمية
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {r.academicStrengths.map((s, i) => (
@@ -296,7 +356,7 @@ export default function Result() {
                         color="success"
                         variant="soft"
                         size="sm"
-                        style={{ direction: IS_AR(s) ? "rtl" : "ltr" }}
+                        style={{ direction: "rtl" }}
                       >
                         {CLEAN(s)}
                       </Chip>
@@ -312,7 +372,7 @@ export default function Result() {
         <FadeIn delay={550} className="space-y-4">
           <div className="flex items-center gap-2 font-medium" style={{ color: "#71151a" }}>
             <GraduationCap className="w-5 h-5" style={{ color: "var(--accent-foreground)" }} />
-            Alternative majors
+            التخصصات البديلة
           </div>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
             {r.alternativeMajors.map((major, i) => (
@@ -325,7 +385,7 @@ export default function Result() {
                   <div className="flex items-start justify-between gap-2">
                     <span
                       className="font-medium text-sm leading-snug text-foreground"
-                      style={{ direction: IS_AR(major) ? "rtl" : "ltr" }}
+                      style={{ direction: "rtl" }}
                     >
                       {CLEAN(major)}
                     </span>
@@ -357,11 +417,11 @@ export default function Result() {
                 className="text-xs font-semibold uppercase tracking-wider"
                 style={{ color: "var(--accent-foreground)" }}
               >
-                Advisor's note
+                رسالة المستشار
               </p>
               <p
                 className="text-muted-foreground leading-relaxed italic"
-                style={{ direction: IS_AR(r.closingMessage) ? "rtl" : "ltr" }}
+                style={{ direction: "rtl" }}
               >
                 "{CLEAN(r.closingMessage)}"
               </p>
@@ -376,15 +436,15 @@ export default function Result() {
             variant="primary"
             className="flex-1 py-5 rounded-xl font-medium group"
           >
-            <RefreshCw className="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
-            Start new interview
+            <RefreshCw className="w-4 h-4 ml-2 group-hover:rotate-180 transition-transform duration-500" />
+            بدء مقابلة جديدة
           </Button>
           <Button
             variant="outline"
             onPress={() => window.print()}
             className="py-5 rounded-xl"
           >
-            Print results
+            طباعة النتائج
           </Button>
         </FadeIn>
       </main>

@@ -14,4 +14,6 @@ export interface InterviewTurnInput {
   forceFinalize?: boolean;
   /** Optional pre-filled student profile context to inject into the AI system prompt. */
   profileContext?: string;
+  /** Optional session ID to associate the completed interview record with this session. */
+  sessionId?: string;
 }

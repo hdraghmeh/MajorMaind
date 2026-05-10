@@ -52,7 +52,7 @@
   --color-card: oklch(1 0 0);
   --color-card-foreground: oklch(0.14 0.01 80);
 
-  --font-sans: 'Outfit', sans-serif;
+  --font-sans: 'Cairo', sans-serif;
   --font-serif: 'Syne', sans-serif;
   --font-mono: Menlo, monospace;
 

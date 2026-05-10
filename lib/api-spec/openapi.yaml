@@ -117,6 +117,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InterviewError"
+  /interview-result/{sessionId}:
+    get:
+      operationId: getInterviewResult
+      tags: [interview]
+      summary: Retrieve a completed interview result by session ID
+      description: |
+        Returns the completed interview record stored in the database for the given session ID.
+        For authenticated-user sessions, the caller must be the same user who conducted the interview.
+        For guest sessions, the caller must hold the per-session claim cookie set when the session was created.
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Completed interview record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewResultRecord"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewError"
+        "404":
+          description: Record not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewError"
   /auth/user:
     get:
       tags: [Auth]
@@ -335,6 +375,9 @@ components:
         profileContext:
           type: string
           description: Optional pre-filled student profile context to inject into the AI system prompt.
+        sessionId:
+          type: string
+          description: Optional session ID to associate the completed interview record with this session.
       required:
         - messages
     InterviewFinalizeInput:
@@ -345,6 +388,9 @@ components:
           description: The full transcript of the interview so far, oldest first.
           items:
             $ref: "#/components/schemas/InterviewMessage"
+        sessionId:
+          type: string
+          description: Optional session ID to link the finalized record to the active session.
       required:
         - messages
     InterviewProgress:
@@ -388,6 +434,9 @@ components:
             type: string
         closingMessage:
           type: string
+        admissionNote:
+          type: ["string", "null"]
+          description: Optional note about AAUP admission requirements and GPA eligibility.
       required:
         - recommendedMajor
         - matchScore
@@ -422,6 +471,33 @@ components:
           type: string
       required:
         - error
+    InterviewResultRecord:
+      type: object
+      description: A completed interview record stored in the database.
+      properties:
+        sessionId:
+          type: ["string", "null"]
+          description: The session ID this record is linked to.
+        recommendation:
+          $ref: "#/components/schemas/InterviewRecommendation"
+        fullConversation:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterviewMessage"
+        savedAt:
+          type: string
+          format: date-time
+        user:
+          type: ["object", "null"]
+          properties:
+            id:
+              type: string
+            email:
+              type: ["string", "null"]
+            firstName:
+              type: ["string", "null"]
+            lastName:
+              type: ["string", "null"]
     InterviewSessionData:
       type: object
       properties:
@@ -433,6 +509,11 @@ components:
           type: string
         title:
           type: ["string", "null"]
+        profileData:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: Optional profile form data captured at each step.
         messages:
           type: array
           items:

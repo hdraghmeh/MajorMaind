@@ -15,15 +15,15 @@ const stripEmoji = (s: string) => s.replace(EMOJI_RE, "").replace(/\s+/g, " ").t
 const IS_AR = (s: string) => /[\u0600-\u06FF]/.test(s);
 
 const REACTIONS = [
-  "Interesting choice...",
-  "That tells me a lot about you...",
-  "Got it, this is very insightful...",
-  "I see where you're going with this...",
-  "That's a meaningful perspective...",
-  "Thank you for sharing that...",
-  "I appreciate your honesty...",
-  "That's a great signal for me...",
-  "Very telling — I'll factor this in...",
+  "اختيار مثير للاهتمام...",
+  "هذا يخبرني الكثير عنك...",
+  "فهمت، هذا مفيد جداً...",
+  "أرى إلى أين تتجه...",
+  "هذا منظور ذو معنى...",
+  "شكراً لمشاركتي هذا...",
+  "أقدّر صراحتك...",
+  "هذه إشارة رائعة بالنسبة لي...",
+  "معبّر جداً — سآخذ هذا بعين الاعتبار...",
 ];
 
 function pickReaction(): string {
@@ -66,14 +66,11 @@ export default function Interview() {
 
     if (s.messages.length === 0 && !initialized.current) {
       initialized.current = true;
-      // Build profile context once and store it — reused on every subsequent turn
       const profile = getStudentProfile();
       const profileCtx = profile?.name ? buildProfileContext(profile) : null;
       profileContextRef.current = profileCtx;
       runTurn([], s, false, profileCtx);
     } else if (s.messages.length > 0) {
-      // Resuming an in-progress session — rebuild profile context so it is
-      // available on the next turn without a page reload
       const profile = getStudentProfile();
       profileContextRef.current = profile?.name ? buildProfileContext(profile) : null;
     }
@@ -83,7 +80,6 @@ export default function Interview() {
     scrollToBottom();
   }, [session?.messages, avatarState]);
 
-  // Cancel speech when leaving page
   useEffect(() => {
     return () => cancel();
   }, [cancel]);
@@ -101,7 +97,7 @@ export default function Interview() {
 
     try {
       const response = await turnMutation.mutateAsync({
-        data: { messages: currentMessages, forceFinalize, profileContext: profileContext ?? undefined },
+        data: { messages: currentMessages, forceFinalize, profileContext: profileContext ?? undefined, sessionId: s.id },
       });
 
       const newSession = { ...s };
@@ -110,7 +106,6 @@ export default function Interview() {
         const cleanQuestion = stripEmoji(response.question);
 
         if (hasStudentPrior) {
-          // 1. Show + speak micro-reaction
           const reaction = pickReaction();
           setMicroReaction(reaction);
           setAvatarState("speaking");
@@ -118,12 +113,10 @@ export default function Interview() {
           await wait(1400);
           setMicroReaction(null);
         } else {
-          // First greeting — brief speaking flash
           setAvatarState("speaking");
           await wait(400);
         }
 
-        // 2. Add message to chat + speak it
         newSession.messages = [
           ...currentMessages,
           { role: "advisor", content: cleanQuestion },
@@ -131,13 +124,13 @@ export default function Interview() {
         newSession.progress = response.progress;
         saveSession(newSession);
         setSession(newSession);
-        setAvatarState("idle"); // voice active state keeps visuals alive
+        setAvatarState("idle");
 
         speak(cleanQuestion);
 
       } else if (response.kind === "result" && response.recommendation) {
         setAvatarState("result");
-        speak("Based on everything I've analyzed about you... here is your recommended academic path.");
+        speak("بناءً على كل ما حللته عنك... إليك مسارك الأكاديمي الموصى به.");
 
         newSession.recommendation = response.recommendation;
         newSession.progress = response.progress;
@@ -151,9 +144,12 @@ export default function Interview() {
       }
     } catch (err: unknown) {
       setAvatarState("idle");
-      const description =
-        err instanceof Error ? err.message : "Unable to reach the advisor. Please try again.";
-      toast({ title: "Connection Error", description, variant: "destructive" });
+      // Always surface Arabic error text regardless of backend message language
+      const isNetwork = err instanceof TypeError && err.message.includes("fetch");
+      const description = isNetwork
+        ? "تعذّر الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً."
+        : "تعذّر الوصول إلى المستشار. يرجى المحاولة مجدداً.";
+      toast({ title: "خطأ في الاتصال", description, variant: "destructive" });
     }
   };
 
@@ -164,7 +160,7 @@ export default function Interview() {
     const cleaned = stripEmoji(input);
     if (!cleaned) return;
 
-    cancel(); // stop any current speech
+    cancel();
 
     const newMessage: InterviewMessage = { role: "student", content: cleaned };
     const updatedMessages = [...session.messages, newMessage];
@@ -210,7 +206,7 @@ export default function Interview() {
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <div className="flex-1 min-w-0 space-y-1.5">
             <div className="flex justify-between items-center text-xs text-muted-foreground">
-              <span className="font-medium">{session.progress?.stage || "Getting started"}</span>
+              <span className="font-medium">{session.progress?.stage || "بداية المقابلة"}</span>
               <div className="flex items-center gap-3">
                 <span>{progress}%</span>
                 {session.messages.length > 2 && (
@@ -221,7 +217,7 @@ export default function Interview() {
                     style={{ color: "#71151a" }}
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Get result
+                    احصل على النتيجة
                   </button>
                 )}
               </div>
@@ -251,7 +247,6 @@ export default function Interview() {
           size={72}
         />
 
-        {/* Mute toggle */}
         {isSupported && (
           <button
             onClick={toggleMute}
@@ -263,11 +258,11 @@ export default function Interview() {
               color: isMuted ? "#71151a" : "var(--accent-foreground)",
               border: `1px solid ${isMuted ? "#71151a30" : "#84e4a835"}`,
             }}
-            title={isMuted ? "Voice is off — click to enable" : "Voice is on — click to mute"}
+            title={isMuted ? "الصوت معطّل — انقر للتفعيل" : "الصوت مفعّل — انقر للكتم"}
           >
             {isMuted
-              ? <><VolumeX className="w-3 h-3" /> Voice off</>
-              : <><Volume2 className="w-3 h-3" /> Voice on</>
+              ? <><VolumeX className="w-3 h-3" /> الصوت معطّل</>
+              : <><Volume2 className="w-3 h-3" /> الصوت مفعّل</>
             }
           </button>
         )}
@@ -280,14 +275,13 @@ export default function Interview() {
           {session.messages.length === 0 && avatarState === "thinking" && (
             <div className="text-center py-6">
               <p className="text-sm text-muted-foreground italic animate-pulse">
-                Your advisor is preparing...
+                مستشارك يستعد...
               </p>
             </div>
           )}
 
           {session.messages.map((msg, idx) => {
             const isAdvisor = msg.role === "advisor";
-            const isAr = IS_AR(msg.content);
             const isLast = idx === session.messages.length - 1;
 
             return (
@@ -302,7 +296,7 @@ export default function Interview() {
                     style={{
                       background: "var(--surface)",
                       boxShadow: "var(--surface-shadow)",
-                      direction: isAr ? "rtl" : "ltr",
+                      direction: "rtl",
                     }}
                   >
                     {msg.content}
@@ -314,7 +308,7 @@ export default function Interview() {
                       background: "color-mix(in oklab, #84e4a8 16%, var(--surface))",
                       border: "1px solid color-mix(in oklab, #84e4a8 28%, transparent)",
                       color: "var(--foreground)",
-                      direction: isAr ? "rtl" : "ltr",
+                      direction: "rtl",
                     }}
                   >
                     {msg.content}
@@ -324,7 +318,6 @@ export default function Interview() {
             );
           })}
 
-          {/* Thinking dots in chat */}
           {avatarState === "thinking" && (
             <div className="flex justify-start" style={{ animation: "fade-slide-up 0.3s ease forwards" }}>
               <div
@@ -354,18 +347,6 @@ export default function Interview() {
       >
         <div className="max-w-2xl mx-auto">
           <form onSubmit={handleSubmit} className="flex items-center gap-2">
-            <div
-              className={`flex-1 transition-opacity duration-200 ${isBusy ? "opacity-50 pointer-events-none" : ""}`}
-            >
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={isBusy ? "Your advisor is responding..." : "Type your response..."}
-                className="w-full rounded-xl text-sm"
-                style={{ direction: IS_AR(input) ? "rtl" : "ltr" }}
-              />
-            </div>
             <Button
               type="submit"
               isIconOnly
@@ -375,6 +356,18 @@ export default function Interview() {
             >
               <Send className="w-4 h-4" />
             </Button>
+            <div
+              className={`flex-1 transition-opacity duration-200 ${isBusy ? "opacity-50 pointer-events-none" : ""}`}
+            >
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={isBusy ? "مستشارك يُجيب..." : "اكتب إجابتك..."}
+                className="w-full rounded-xl text-sm"
+                style={{ direction: "rtl" }}
+              />
+            </div>
           </form>
         </div>
       </footer>

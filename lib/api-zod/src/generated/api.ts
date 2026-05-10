@@ -57,7 +57,12 @@ export const StartInterviewResponse = zod.object({
         academicStrengths: zod.array(zod.string()),
         careerAdvice: zod.array(zod.string()),
         closingMessage: zod.string(),
-        admissionNote: zod.string().nullish(),
+        admissionNote: zod
+          .string()
+          .nullish()
+          .describe(
+            "Optional note about AAUP admission requirements and GPA eligibility.",
+          ),
       }),
       zod.null(),
     ])
@@ -91,6 +96,12 @@ export const InterviewTurnBody = zod.object({
     .optional()
     .describe(
       "Optional pre-filled student profile context to inject into the AI system prompt.",
+    ),
+  sessionId: zod
+    .string()
+    .optional()
+    .describe(
+      "Optional session ID to associate the completed interview record with this session.",
     ),
 });
 
@@ -130,7 +141,12 @@ export const InterviewTurnResponse = zod.object({
         academicStrengths: zod.array(zod.string()),
         careerAdvice: zod.array(zod.string()),
         closingMessage: zod.string(),
-        admissionNote: zod.string().nullish(),
+        admissionNote: zod
+          .string()
+          .nullish()
+          .describe(
+            "Optional note about AAUP admission requirements and GPA eligibility.",
+          ),
       }),
       zod.null(),
     ])
@@ -153,6 +169,12 @@ export const FinalizeInterviewBody = zod.object({
       }),
     )
     .describe("The full transcript of the interview so far, oldest first."),
+  sessionId: zod
+    .string()
+    .optional()
+    .describe(
+      "Optional session ID to link the finalized record to the active session.",
+    ),
 });
 
 export const finalizeInterviewResponseProgressPercentMin = 0;
@@ -191,13 +213,78 @@ export const FinalizeInterviewResponse = zod.object({
         academicStrengths: zod.array(zod.string()),
         careerAdvice: zod.array(zod.string()),
         closingMessage: zod.string(),
-        admissionNote: zod.string().nullish(),
+        admissionNote: zod
+          .string()
+          .nullish()
+          .describe(
+            "Optional note about AAUP admission requirements and GPA eligibility.",
+          ),
       }),
       zod.null(),
     ])
     .optional()
     .describe("Final recommendation. Present when kind=result."),
 });
+
+/**
+ * Returns the completed interview record stored in the database for the given session ID.
+For authenticated-user sessions, the caller must be the same user who conducted the interview.
+For guest sessions, the caller must hold the per-session claim cookie set when the session was created.
+
+ * @summary Retrieve a completed interview result by session ID
+ */
+export const GetInterviewResultParams = zod.object({
+  sessionId: zod.coerce.string(),
+});
+
+export const getInterviewResultResponseRecommendationMatchScoreMin = 0;
+export const getInterviewResultResponseRecommendationMatchScoreMax = 100;
+
+export const GetInterviewResultResponse = zod
+  .object({
+    sessionId: zod
+      .string()
+      .nullish()
+      .describe("The session ID this record is linked to."),
+    recommendation: zod
+      .object({
+        recommendedMajor: zod.string(),
+        matchScore: zod
+          .number()
+          .min(getInterviewResultResponseRecommendationMatchScoreMin)
+          .max(getInterviewResultResponseRecommendationMatchScoreMax),
+        whyItFits: zod.array(zod.string()),
+        alternativeMajors: zod.array(zod.string()),
+        academicStrengths: zod.array(zod.string()),
+        careerAdvice: zod.array(zod.string()),
+        closingMessage: zod.string(),
+        admissionNote: zod
+          .string()
+          .nullish()
+          .describe(
+            "Optional note about AAUP admission requirements and GPA eligibility.",
+          ),
+      })
+      .optional(),
+    fullConversation: zod
+      .array(
+        zod.object({
+          role: zod.enum(["student", "advisor"]),
+          content: zod.string(),
+        }),
+      )
+      .optional(),
+    savedAt: zod.coerce.date().optional(),
+    user: zod
+      .object({
+        id: zod.string().optional(),
+        email: zod.string().nullish(),
+        firstName: zod.string().nullish(),
+        lastName: zod.string().nullish(),
+      })
+      .nullish(),
+  })
+  .describe("A completed interview record stored in the database.");
 
 /**
  * @summary Get the currently authenticated user
@@ -306,6 +393,10 @@ export const ListInterviewSessionsResponse = zod.object({
       createdAt: zod.string(),
       updatedAt: zod.string(),
       title: zod.string().nullish(),
+      profileData: zod
+        .record(zod.string(), zod.unknown())
+        .nullish()
+        .describe("Optional profile form data captured at each step."),
       messages: zod.array(
         zod.object({
           role: zod.enum(["student", "advisor"]),
@@ -349,7 +440,12 @@ export const ListInterviewSessionsResponse = zod.object({
             academicStrengths: zod.array(zod.string()),
             careerAdvice: zod.array(zod.string()),
             closingMessage: zod.string(),
-            admissionNote: zod.string().nullish(),
+            admissionNote: zod
+              .string()
+              .nullish()
+              .describe(
+                "Optional note about AAUP admission requirements and GPA eligibility.",
+              ),
           }),
           zod.null(),
         ])
@@ -383,6 +479,10 @@ export const SaveInterviewSessionBody = zod.object({
   createdAt: zod.string(),
   updatedAt: zod.string(),
   title: zod.string().nullish(),
+  profileData: zod
+    .record(zod.string(), zod.unknown())
+    .nullish()
+    .describe("Optional profile form data captured at each step."),
   messages: zod.array(
     zod.object({
       role: zod.enum(["student", "advisor"]),
@@ -416,7 +516,12 @@ export const SaveInterviewSessionBody = zod.object({
         academicStrengths: zod.array(zod.string()),
         careerAdvice: zod.array(zod.string()),
         closingMessage: zod.string(),
-        admissionNote: zod.string().nullish(),
+        admissionNote: zod
+          .string()
+          .nullish()
+          .describe(
+            "Optional note about AAUP admission requirements and GPA eligibility.",
+          ),
       }),
       zod.null(),
     ])
@@ -434,6 +539,10 @@ export const SaveInterviewSessionResponse = zod.object({
   createdAt: zod.string(),
   updatedAt: zod.string(),
   title: zod.string().nullish(),
+  profileData: zod
+    .record(zod.string(), zod.unknown())
+    .nullish()
+    .describe("Optional profile form data captured at each step."),
   messages: zod.array(
     zod.object({
       role: zod.enum(["student", "advisor"]),
@@ -467,7 +576,12 @@ export const SaveInterviewSessionResponse = zod.object({
         academicStrengths: zod.array(zod.string()),
         careerAdvice: zod.array(zod.string()),
         closingMessage: zod.string(),
-        admissionNote: zod.string().nullish(),
+        admissionNote: zod
+          .string()
+          .nullish()
+          .describe(
+            "Optional note about AAUP admission requirements and GPA eligibility.",
+          ),
       }),
       zod.null(),
     ])

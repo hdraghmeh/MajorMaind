@@ -26,6 +26,7 @@ export interface InterviewRecordUser {
 
 export interface InterviewRecord {
   recordId: string;
+  sessionId?: string | null;
   savedAt: string;
   user: InterviewRecordUser | null;
   totalMessages: number;
@@ -53,11 +54,13 @@ export async function saveInterviewRecord(
   messages: InterviewMessage[],
   recommendation: InterviewRecommendation,
   user: InterviewRecordUser | null,
+  sessionId?: string | null,
 ): Promise<string> {
   const recordId = crypto.randomBytes(8).toString("hex");
 
   const record: InterviewRecord = {
     recordId,
+    sessionId: sessionId ?? null,
     savedAt: new Date().toISOString(),
     user: user
       ? {
