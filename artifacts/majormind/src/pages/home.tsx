@@ -167,7 +167,7 @@ function StatCounter({
       <div
         className="font-black leading-none tracking-tight"
         style={{
-          fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
+          fontSize: "clamp(1.6rem, 3vw, 2.2rem)",
           background: "linear-gradient(135deg, #71151a 0%, #a0232c 60%, #71151a 100%)",
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
