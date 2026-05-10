@@ -636,18 +636,12 @@ export default function Home() {
 
       {/* ── Footer ── */}
       <footer style={{ background: "var(--surface-secondary)" }}>
-        <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <img src={logoUrl} alt="MajorMind" className="h-10 w-auto object-contain" />
-            <div>
-              <p className="font-serif text-sm font-semibold" style={{ color: "#71151a" }}>فكّر بذكاء في مستقبلك.</p>
-              <p className="text-xs text-muted-foreground">نظام إرشاد أكاديمي بالذكاء الاصطناعي</p>
-            </div>
+        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
+            <img src={logoUrl} alt="MajorMind" className="h-7 w-auto object-contain opacity-80" />
+            <p className="text-sm text-muted-foreground">MajorMind &copy; 2026 — جميع الحقوق محفوظة</p>
           </div>
-          <div className="flex items-center gap-4">
-            <p className="text-sm text-muted-foreground text-center">مبني لطلاب التوجيهي الفلسطيني.</p>
-            <Link href="/admin" className="text-xs text-muted-foreground opacity-30 hover:opacity-70 transition-opacity">لوحة الإدارة</Link>
-          </div>
+          <Link href="/admin" className="text-xs text-muted-foreground opacity-30 hover:opacity-70 transition-opacity">لوحة الإدارة</Link>
         </div>
       </footer>
     </div>
