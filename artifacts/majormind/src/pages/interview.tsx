@@ -6,14 +6,12 @@ import { getStudentProfile, buildProfileContext } from "@/lib/studentProfile";
 import { useInterviewTurn, type InterviewMessage } from "@workspace/api-client-react";
 import { Button } from "@heroui/react";
 import { Input } from "@heroui/react";
-import { Send, CheckCircle2, Volume2, VolumeX } from "lucide-react";
+import { Send, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AIAvatar, { type AvatarState } from "@/components/AIAvatar";
-import { useSpeech } from "@/hooks/useSpeech";
 
 const EMOJI_RE = /[\u{1F1E0}-\u{1F1FF}\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu;
 const stripEmoji = (s: string) => s.replace(EMOJI_RE, "").replace(/\s+/g, " ").trim();
-const IS_AR = (s: string) => /[\u0600-\u06FF]/.test(s);
 
 const REACTIONS = [
   "اختيار مثير للاهتمام...",
@@ -51,8 +49,6 @@ export default function Interview() {
   const profileContextRef = useRef<string | null>(null);
   const turnMutation = useInterviewTurn();
 
-  const { speak, cancel, isSpeaking, isMuted, toggleMute, isSupported } = useSpeech();
-
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -89,10 +85,6 @@ export default function Interview() {
     scrollToBottom();
   }, [session?.messages, avatarState]);
 
-  useEffect(() => {
-    return () => cancel();
-  }, [cancel]);
-
   const runTurn = async (
     currentMessages: InterviewMessage[],
     s: StoredSession,
@@ -118,7 +110,6 @@ export default function Interview() {
           const reaction = pickReaction();
           setMicroReaction(reaction);
           setAvatarState("speaking");
-          speak(reaction);
           await wait(1400);
           setMicroReaction(null);
         } else {
@@ -135,11 +126,8 @@ export default function Interview() {
         setSession(newSession);
         setAvatarState("idle");
 
-        speak(cleanQuestion);
-
       } else if (response.kind === "result" && response.recommendation) {
         setAvatarState("result");
-        speak("بناءً على كل ما حللته عنك... إليك مسارك الأكاديمي الموصى به.");
 
         newSession.recommendation = response.recommendation;
         newSession.progress = response.progress;
@@ -148,12 +136,10 @@ export default function Interview() {
         setSession(newSession);
 
         await wait(1400);
-        cancel();
         setLocation(`/result/${newSession.id}`);
       }
     } catch (err: unknown) {
       setAvatarState("idle");
-      // Always surface Arabic error text regardless of backend message language
       const isNetwork = err instanceof TypeError && err.message.includes("fetch");
       const description = isNetwork
         ? "تعذّر الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً."
@@ -169,8 +155,6 @@ export default function Interview() {
     const cleaned = stripEmoji(input);
     if (!cleaned) return;
 
-    cancel();
-
     const newMessage: InterviewMessage = { role: "student", content: cleaned };
     const updatedMessages = [...session.messages, newMessage];
     const updatedSession = { ...session, messages: updatedMessages };
@@ -184,7 +168,6 @@ export default function Interview() {
 
   const handleForceFinalize = async () => {
     if (!session || avatarState === "thinking") return;
-    cancel();
     await runTurn(session.messages, session, true, profileContextRef.current);
   };
 
@@ -252,29 +235,9 @@ export default function Interview() {
         <AIAvatar
           state={avatarState}
           microReaction={microReaction}
-          isVoiceActive={isSpeaking}
+          isVoiceActive={false}
           size={72}
         />
-
-        {isSupported && (
-          <button
-            onClick={toggleMute}
-            className="mt-1 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:opacity-80"
-            style={{
-              background: isMuted
-                ? "color-mix(in oklab, #71151a 10%, transparent)"
-                : "color-mix(in oklab, #84e4a8 14%, transparent)",
-              color: isMuted ? "#71151a" : "var(--accent-foreground)",
-              border: `1px solid ${isMuted ? "#71151a30" : "#84e4a835"}`,
-            }}
-            title={isMuted ? "الصوت معطّل — انقر للتفعيل" : "الصوت مفعّل — انقر للكتم"}
-          >
-            {isMuted
-              ? <><VolumeX className="w-3 h-3" /> الصوت معطّل</>
-              : <><Volume2 className="w-3 h-3" /> الصوت مفعّل</>
-            }
-          </button>
-        )}
       </div>
 
       {/* ── Chat messages ── */}
