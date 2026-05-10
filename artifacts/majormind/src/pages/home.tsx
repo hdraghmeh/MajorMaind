@@ -7,7 +7,7 @@ import { useAuth } from "@workspace/replit-auth-web";
 import Navbar from "@/components/Navbar";
 import WelcomeModal, { hasBeenWelcomed, markWelcomed } from "@/components/WelcomeModal";
 import logoUrl from "/logo.png";
-import { ArrowLeft, Brain, MessageSquare, Award, BookOpen, TrendingUp, Sparkles, ChevronDown, UserCircle, Archive } from "lucide-react";
+import { ArrowLeft, Brain, MessageSquare, Award, BookOpen, TrendingUp, Sparkles, ChevronDown, UserCircle, Archive, LogIn } from "lucide-react";
 
 const STEPS = [
   {
@@ -363,7 +363,7 @@ export default function Home() {
               >
                 <span className="w-2 h-2 rounded-full bg-[#84e4a8] animate-pulse shrink-0" />
                 <span className="text-sm font-medium text-foreground">سجّل الدخول لبدء مقابلتك</span>
-                <ArrowLeft className="w-3.5 h-3.5 text-muted-foreground group-hover:text-[#71151a] group-hover:-translate-x-1 transition-all duration-200" />
+                <LogIn className="w-3.5 h-3.5 text-muted-foreground group-hover:text-[#71151a] transition-colors duration-200" />
               </button>
             </div>
           )}
