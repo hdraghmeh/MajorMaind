@@ -484,7 +484,7 @@ export default function Home() {
       </section>
 
       {/* ── CTA Banner ── */}
-      <section className="max-w-6xl mx-auto px-6 py-24">
+      <section className="max-w-6xl mx-auto px-6 pt-24 pb-10">
         <Reveal>
           <div
             className="relative rounded-3xl overflow-hidden text-center px-8 py-20 space-y-8"
