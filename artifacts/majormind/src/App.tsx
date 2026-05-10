@@ -9,6 +9,7 @@ import Result from "@/pages/result";
 import Login from "@/pages/login";
 import Admin from "@/pages/admin";
 import Profile from "@/pages/profile";
+import Sessions from "@/pages/sessions";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/admin" component={Admin} />
       <Route path="/profile" component={Profile} />
+      <Route path="/sessions" component={Sessions} />
       <Route path="/interview/:sessionId" component={Interview} />
       <Route path="/result/:sessionId" component={Result} />
       <Route component={NotFound} />

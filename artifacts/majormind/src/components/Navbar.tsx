@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { Button, Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
 import { useAuth } from "@workspace/replit-auth-web";
 import logoUrl from "/logo.png";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Archive } from "lucide-react";
 
 interface NavbarProps {
   variant?: "landing" | "app";
@@ -11,11 +11,6 @@ interface NavbarProps {
 export default function Navbar({ variant = "app" }: NavbarProps) {
   const [location, setLocation] = useLocation();
   const { user, isLoading, isAuthenticated, login, logout } = useAuth();
-
-  const handleStart = () => {
-    const session = createSession();
-    setLocation(`/interview/${session.id}`);
-  };
 
   const isHome = location === "/";
 
@@ -75,6 +70,14 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
                   </button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="قائمة المستخدم">
+                  <DropdownItem
+                    key="sessions"
+                    startContent={<Archive className="w-4 h-4" />}
+                    onPress={() => setLocation("/sessions")}
+                    className="text-foreground"
+                  >
+                    جلساتي
+                  </DropdownItem>
                   <DropdownItem
                     key="logout"
                     startContent={<LogOut className="w-4 h-4" />}
