@@ -225,11 +225,21 @@ async function runTurn(
   }
 }
 
+function requireAuth(req: Parameters<typeof runTurn>[0], res: Parameters<typeof runTurn>[1]): boolean {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Unauthorized" });
+    return false;
+  }
+  return true;
+}
+
 router.post("/interview/start", async (req, res) => {
+  if (!requireAuth(req, res)) return;
   return runTurn(req, res, [], false);
 });
 
 router.post("/interview/turn", async (req, res) => {
+  if (!requireAuth(req, res)) return;
   const parsed = InterviewTurnBody.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "Invalid input" });
@@ -239,6 +249,7 @@ router.post("/interview/turn", async (req, res) => {
 });
 
 router.post("/interview/finalize", async (req, res) => {
+  if (!requireAuth(req, res)) return;
   const parsed = FinalizeInterviewBody.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "Invalid input" });

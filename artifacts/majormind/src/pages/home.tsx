@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { getSessions, createSession, loadSessionsFromServer, mergeServerSessions, backfillLocalSessionsToServer, reconcileCompletedSessions, type StoredSession } from "@/lib/sessions";
+import { getSessions, createSession, loadSessionsFromServer, mergeServerSessions, reconcileCompletedSessions, type StoredSession } from "@/lib/sessions";
 import { getStudentProfile } from "@/lib/studentProfile";
 import { Button, Card, CardContent, Chip } from "@heroui/react";
 import { useAuth } from "@workspace/replit-auth-web";
@@ -47,8 +47,8 @@ const FEATURES = [
   },
   {
     icon: Users,
-    title: "خصوصية افتراضية",
-    desc: "لا حاجة لحساب. سجّل الدخول لحفظ جلساتك عبر الأجهزة — بياناتك لا تُشارك ولا تُباع.",
+    title: "بياناتك محفوظة",
+    desc: "سجّل الدخول وجلساتك تُحفظ تلقائياً ومتاحة من أي جهاز — بياناتك لا تُشارك ولا تُباع.",
   },
 ];
 
@@ -133,9 +133,7 @@ export default function Home() {
       if (isAuthenticated) {
         const serverSessions = await loadSessionsFromServer();
         if (!active) return;
-        await backfillLocalSessionsToServer(serverSessions);
         await mergeServerSessions(serverSessions);
-        // Recover completed status for sessions whose final sync may have failed
         await reconcileCompletedSessions();
       }
 
@@ -156,6 +154,10 @@ export default function Home() {
   const hasProfile = !!getStudentProfile()?.name;
 
   const handleStart = () => {
+    if (!isAuthenticated) {
+      window.location.href = "/api/login";
+      return;
+    }
     if (!hasProfile) {
       setLocation("/profile");
     } else {
@@ -252,10 +254,10 @@ export default function Home() {
           {!authLoading && !isAuthenticated && (
             <p className="text-sm text-muted-foreground animate-in fade-in duration-1000 delay-500">
               <button
-                onClick={() => setLocation("/login")}
+                onClick={() => { window.location.href = "/api/login"; }}
                 className="inline-flex items-center gap-1.5 underline underline-offset-2 hover:text-foreground transition-colors"
               >
-                سجّل الدخول لحفظ جلساتك عبر الأجهزة
+                سجّل الدخول لبدء مقابلتك
               </button>
             </p>
           )}
@@ -399,7 +401,7 @@ export default function Home() {
                 مستقبلك يبدأ بمحادثة واحدة.
               </h2>
               <p className="text-xl font-light max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.72)" }}>
-                تستغرق أقل من ثلاث دقائق. بلا تسجيل، بلا تكلفة، بلا ضغط.
+                تستغرق أقل من ثلاث دقائق. بلا تكلفة، بلا ضغط.
               </p>
             </div>
             <div className="relative">
@@ -429,11 +431,6 @@ export default function Home() {
             <span className="px-1.5 py-0.5 text-xs rounded-full bg-[--surface-secondary] border border-[--border] leading-none">
               {sessions.length}
             </span>
-            {isAuthenticated && (
-              <span className="text-xs text-muted-foreground bg-[--surface-secondary] px-2 py-0.5 rounded-full border border-[--border] leading-none">
-                متزامن
-              </span>
-            )}
             <ChevronDown
               className="w-3.5 h-3.5 opacity-60 transition-transform duration-300"
               style={{ transform: showSessions ? "rotate(180deg)" : "rotate(0deg)" }}
@@ -494,7 +491,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <p className="text-sm text-muted-foreground text-center">مبني لطلاب التوجيهي. سجّل الدخول لمزامنة جلساتك.</p>
+            <p className="text-sm text-muted-foreground text-center">مبني لطلاب التوجيهي الفلسطيني.</p>
             <Link href="/admin" className="text-xs text-muted-foreground opacity-30 hover:opacity-70 transition-opacity">لوحة الإدارة</Link>
           </div>
         </div>

@@ -141,25 +141,3 @@ export async function reconcileCompletedSessions(): Promise<void> {
   }
 }
 
-export async function backfillLocalSessionsToServer(serverSessions: StoredSession[]): Promise<void> {
-  const local = getSessions();
-  const serverIds = new Set(serverSessions.map((s) => s.id));
-
-  const toUpload = Object.values(local).filter((s) => {
-    if (s.messages.length === 0) return false;
-    if (!serverIds.has(s.id)) return true;
-    const serverVersion = serverSessions.find((sv) => sv.id === s.id);
-    return serverVersion && new Date(s.updatedAt) > new Date(serverVersion.updatedAt);
-  });
-
-  await Promise.allSettled(
-    toUpload.map((session) =>
-      fetch(`/api/interview-sessions/${session.id}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(session),
-      }),
-    ),
-  );
-}

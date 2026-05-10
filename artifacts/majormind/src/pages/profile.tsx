@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@workspace/replit-auth-web";
 import { Button } from "@heroui/react";
 import { getStudentProfile, saveStudentProfile, EMPTY_PROFILE, type StudentProfile, type TawjihiStream, type LearningStyle, type PersonalityType } from "@/lib/studentProfile";
 import { createSession, getSession, saveSession } from "@/lib/sessions";
@@ -174,17 +175,32 @@ const DRAFT_SESSION_KEY = "majormind.profile-draft-session-id";
 
 export default function Profile() {
   const [, setLocation] = useLocation();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<StudentProfile>(() => getStudentProfile() ?? { ...EMPTY_PROFILE });
 
   // Create or reuse a draft session for this profile form (lazy init, stable across renders)
   const [draftSessionId] = useState<string>(() => {
-    const existing = localStorage.getItem(DRAFT_SESSION_KEY);
-    if (existing && getSession(existing)) return existing;
-    const s = createSession();
-    localStorage.setItem(DRAFT_SESSION_KEY, s.id);
-    return s.id;
+    try {
+      const existing = localStorage.getItem(DRAFT_SESSION_KEY);
+      if (existing && getSession(existing)) return existing;
+      const s = createSession();
+      localStorage.setItem(DRAFT_SESSION_KEY, s.id);
+      return s.id;
+    } catch {
+      return crypto.randomUUID();
+    }
   });
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      window.location.href = "/api/login";
+    }
+  }, [isAuthenticated, authLoading]);
+
+  if (authLoading || !isAuthenticated) {
+    return null;
+  }
 
   const persistProfileToSession = (p: StudentProfile) => {
     const existing = getSession(draftSessionId);

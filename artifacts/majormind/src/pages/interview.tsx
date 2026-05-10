@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRoute, useLocation } from "wouter";
+import { useAuth } from "@workspace/replit-auth-web";
 import { getSession, saveSession, type StoredSession } from "@/lib/sessions";
 import { getStudentProfile, buildProfileContext } from "@/lib/studentProfile";
 import { useInterviewTurn, type InterviewMessage } from "@workspace/api-client-react";
@@ -37,6 +38,7 @@ function wait(ms: number) {
 export default function Interview() {
   const [, params] = useRoute("/interview/:sessionId");
   const [, setLocation] = useLocation();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
 
   const [session, setSession] = useState<StoredSession | null>(null);
@@ -58,6 +60,13 @@ export default function Interview() {
   }, []);
 
   useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      window.location.href = "/api/login";
+    }
+  }, [isAuthenticated, authLoading]);
+
+  useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
     if (!params?.sessionId) return;
     const s = getSession(params.sessionId);
     if (!s) { setLocation("/"); return; }
