@@ -5,6 +5,7 @@ import { getStudentProfile } from "@/lib/studentProfile";
 import { Button, Card, CardContent, Chip } from "@heroui/react";
 import { useAuth } from "@workspace/replit-auth-web";
 import Navbar from "@/components/Navbar";
+import WelcomeModal, { hasBeenWelcomed, markWelcomed } from "@/components/WelcomeModal";
 import logoUrl from "/logo.png";
 import { ArrowLeft, Brain, MessageSquare, Award, BookOpen, TrendingUp, Users, ChevronDown, UserCircle, Archive } from "lucide-react";
 
@@ -102,6 +103,7 @@ export default function Home() {
       return false;
     }
   });
+  const [showWelcome, setShowWelcome] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const sessionsGridRef = useRef<HTMLDivElement>(null);
   const pendingScrollRef = useRef(false);
@@ -125,6 +127,14 @@ export default function Home() {
       });
     }
   }, [showSessions]);
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && !hasBeenWelcomed() && !getStudentProfile()?.name) {
+      setShowWelcome(true);
+    } else if (!authLoading && isAuthenticated && !hasBeenWelcomed() && getStudentProfile()?.name) {
+      markWelcomed();
+    }
+  }, [isAuthenticated, authLoading]);
 
   useEffect(() => {
     let active = true;
@@ -172,6 +182,10 @@ export default function Home() {
 
   return (
     <div className="min-h-[100dvh] bg-background" style={{ scrollBehavior: "smooth" }}>
+      {showWelcome && (
+        <WelcomeModal onClose={() => setShowWelcome(false)} />
+      )}
+
       <Navbar variant="landing" />
 
       {/* ── Hero ── */}
