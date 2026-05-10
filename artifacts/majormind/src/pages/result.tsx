@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRoute, useLocation } from "wouter";
+import { useAuth } from "@workspace/replit-auth-web";
 import { getSession, saveSession, loadSessionsFromServer, mergeServerSessions, createSession, type StoredSession } from "@/lib/sessions";
 import { Button, Card, CardContent, CardHeader, CardTitle, Chip } from "@heroui/react";
 import { ArrowRight, Copy, Download, GraduationCap, Lightbulb, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
@@ -72,11 +73,19 @@ function FadeIn({ children, delay = 0, className = "" }: { children: React.React
 export default function Result() {
   const [, params] = useRoute("/result/:sessionId");
   const [, setLocation] = useLocation();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [session, setSession] = useState<StoredSession | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      window.location.href = "/api/login";
+    }
+  }, [isAuthenticated, authLoading]);
+
+  useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
     if (!params?.sessionId) return;
 
     async function loadSession() {

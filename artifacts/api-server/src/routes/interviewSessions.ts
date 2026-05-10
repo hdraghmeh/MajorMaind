@@ -125,7 +125,8 @@ router.get("/interview-result/:sessionId", async (req: Request, res: Response) =
     const record = rows[0].record as { sessionId?: string; user?: { id?: string } | null };
     const recordUserId = record?.user?.id ?? null;
 
-    if (recordUserId !== null && recordUserId !== requestingUserId) {
+    // Deny access if record has no owner (legacy guest) or belongs to a different user
+    if (recordUserId === null || recordUserId !== requestingUserId) {
       return res.status(403).json({ error: "Forbidden" });
     }
 
