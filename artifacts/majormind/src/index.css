@@ -52,8 +52,8 @@
   --color-card: oklch(1 0 0);
   --color-card-foreground: oklch(0.14 0.01 80);
 
-  --font-sans: 'Cairo', sans-serif;
-  --font-serif: 'Syne', sans-serif;
+  --font-sans: 'Almarai', sans-serif;
+  --font-serif: 'Playfair Display', serif;
   --font-mono: Menlo, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -230,7 +230,7 @@
   * { @apply border-border; }
   body { @apply font-sans antialiased bg-background text-foreground; }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Playfair Display', serif;
     color: #71151a;
   }
 }
