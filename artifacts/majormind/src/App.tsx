@@ -10,6 +10,7 @@ import Login from "@/pages/login";
 import Admin from "@/pages/admin";
 import Profile from "@/pages/profile";
 import Sessions from "@/pages/sessions";
+import InAppBrowserGuard from "@/components/InAppBrowserGuard";
 
 const queryClient = new QueryClient();
 
@@ -30,14 +31,16 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <InAppBrowserGuard>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </InAppBrowserGuard>
   );
 }
 

@@ -44,7 +44,7 @@ function setOidcCookie(res: Response, name: string, value: string) {
   res.cookie(name, value, {
     httpOnly: true,
     secure: true,
-    sameSite: "lax",
+    sameSite: "none",
     path: "/",
     maxAge: OIDC_COOKIE_TTL,
   });
@@ -119,6 +119,101 @@ router.get("/login", async (req: Request, res: Response) => {
   res.redirect(redirectTo.href);
 });
 
+const AUTH_ERROR_STYLES = `
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px 28px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .icon { font-size: 56px; margin-bottom: 20px; }
+    h1 { font-size: 22px; color: #1a1a2e; margin-bottom: 12px; font-weight: 700; }
+    p { font-size: 15px; color: #555; line-height: 1.7; margin-bottom: 20px; }
+    .steps {
+      background: #f0f4ff;
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-align: right;
+      margin-bottom: 24px;
+    }
+    .steps p { margin: 0 0 6px; font-size: 14px; color: #333; }
+    .steps p:last-child { margin: 0; }
+    .btn {
+      display: inline-block;
+      background: #4f46e5;
+      color: #fff;
+      text-decoration: none;
+      padding: 13px 28px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+    }`;
+
+function sendInAppBrowserError(res: Response) {
+  res.status(400).send(`<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تعذّر تسجيل الدخول</title>
+  <style>${AUTH_ERROR_STYLES}</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🔒</div>
+    <h1>تعذّر تسجيل الدخول</h1>
+    <p>
+      يبدو أنك تفتح التطبيق من داخل واتساب أو تطبيق آخر.
+      هذا النوع من المتصفحات لا يدعم عملية تسجيل الدخول الآمنة.
+    </p>
+    <div class="steps">
+      <p>📋 <strong>انسخ رابط التطبيق</strong></p>
+      <p>🌐 <strong>افتحه في Safari أو Chrome</strong></p>
+      <p>✅ <strong>سجّل دخولك بشكل طبيعي</strong></p>
+    </div>
+    <a class="btn" href="/">العودة للصفحة الرئيسية</a>
+  </div>
+</body>
+</html>`);
+}
+
+function sendOidcError(req: Request, res: Response, err: unknown) {
+  req.log.error({ err, reason: "oidc_grant_error" }, "OIDC authorization code grant failed");
+  res.status(500).send(`<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>خطأ في تسجيل الدخول</title>
+  <style>${AUTH_ERROR_STYLES}</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">⚠️</div>
+    <h1>حدث خطأ أثناء تسجيل الدخول</h1>
+    <p>
+      انتهت صلاحية طلب تسجيل الدخول أو حدث خطأ مؤقت.
+      يرجى المحاولة مرة أخرى.
+    </p>
+    <a class="btn" href="/api/login">إعادة المحاولة</a>
+  </div>
+</body>
+</html>`);
+}
+
 // Query params are not validated because the OIDC provider may include
 // parameters not expressed in the schema.
 router.get("/callback", async (req: Request, res: Response) => {
@@ -130,7 +225,8 @@ router.get("/callback", async (req: Request, res: Response) => {
   const expectedState = req.cookies?.state;
 
   if (!codeVerifier || !expectedState) {
-    res.redirect("/api/login");
+    req.log.warn({ reason: "missing_cookie", hasCookies: !!req.headers.cookie }, "OAuth callback missing OIDC cookies — likely in-app browser");
+    sendInAppBrowserError(res);
     return;
   }
 
@@ -146,8 +242,8 @@ router.get("/callback", async (req: Request, res: Response) => {
       expectedState,
       idTokenExpected: true,
     });
-  } catch {
-    res.redirect("/api/login");
+  } catch (err) {
+    sendOidcError(req, res, err);
     return;
   }
 
