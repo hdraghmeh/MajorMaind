@@ -7,7 +7,7 @@ import {
 } from "@workspace/api-zod";
 import { saveInterviewRecord } from "../lib/saveInterviewRecord";
 import { getEligibleMajors, formatEligibleMajorsForPrompt, canonicalBranch, AAUP_MAJORS } from "../lib/aaupData";
-import { db, interviewSessionsTable } from "@workspace/db";
+import { db, interviewSessionsTable, usersTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 
 const router: IRouter = Router();
@@ -122,6 +122,16 @@ function extractProfileFields(profileContext: string): { stream: string; gpa: nu
   return { stream, gpa };
 }
 
+/** Extract the student's name from the profile context string (Arabic label). */
+function extractNameFromProfile(profileContext: string): { firstName: string; lastName: string | null } | null {
+  const match = profileContext.match(/الاسم:\s*(.+)/);
+  if (!match) return null;
+  const full = match[1].trim();
+  if (!full) return null;
+  const parts = full.split(/\s+/);
+  return { firstName: parts[0], lastName: parts.slice(1).join(" ") || null };
+}
+
 async function runTurn(
   req: Request,
   res: Response,
@@ -233,13 +243,30 @@ async function runTurn(
     // Awaited so any failure is detected and logged before returning to the client.
     if (validated.data.kind === "result" && validated.data.recommendation) {
       const user = req.isAuthenticated() ? req.user : null;
+
+      // Prefer the name the student entered in the profile form over whatever
+      // their Replit account shows (which is often blank).
+      const profileName = profileContext ? extractNameFromProfile(profileContext) : null;
+      const firstName = (user?.firstName && user.firstName.trim()) ? user.firstName : (profileName?.firstName ?? null);
+      const lastName  = (user?.lastName  && user.lastName.trim())  ? user.lastName  : (profileName?.lastName  ?? null);
+
       const recordId = await saveInterviewRecord(
         messages as Array<{ role: "student" | "advisor"; content: string }>,
         validated.data.recommendation as Parameters<typeof saveInterviewRecord>[1],
-        user ? { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName } : null,
+        user ? { id: user.id, email: user.email, firstName, lastName } : null,
         sessionId ?? null,
       );
       req.log?.info({ recordId, sessionId }, "interview record saved");
+
+      // Back-fill the users table with the profile name if still empty
+      if (user?.id && firstName && (!user.firstName || !user.firstName.trim())) {
+        try {
+          await db.update(usersTable).set({ firstName, lastName }).where(eq(usersTable.id, user.id));
+          req.log?.info({ userId: user.id, firstName, lastName }, "users table name back-filled from profileContext");
+        } catch (nameErr) {
+          req.log?.warn({ nameErr }, "failed to back-fill name into users table");
+        }
+      }
 
       // Stamp the recommendation onto the interview_sessions row so any device
       // can retrieve the result via loadSessionsFromServer() without relying on
