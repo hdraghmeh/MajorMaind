@@ -1054,8 +1054,16 @@ export const AAUP_MAJORS: AaupMajor[] = [
     "faculty": "Engineering",
     "allowedBranches": [
       {
-        "branch": "All",
-        "minScore": 70
+        "branch": "Scientific",
+        "minScore": 80
+      },
+      {
+        "branch": "Industrial",
+        "minScore": 80
+      },
+      {
+        "branch": "IT",
+        "minScore": 80
       }
     ],
     "favoriteSubjects": "Mathematics; Drawing; Physics",
