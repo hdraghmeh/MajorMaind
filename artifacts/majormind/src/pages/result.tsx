@@ -193,16 +193,24 @@ export default function Result() {
   }, [isAuthenticated, authLoading]);
 
   useEffect(() => {
-    if (authLoading || !isAuthenticated) return;
     if (!params?.sessionId) return;
 
     async function loadSession() {
       const sessionId = params!.sessionId;
 
-      // 1. Try local storage first
+      // 1. Try localStorage immediately — no auth needed, data is local
       let s = getSession(sessionId);
 
-      // 2. If not found locally or missing recommendation, try syncing from server (interview_sessions table)
+      if (s?.recommendation) {
+        setSession(s);
+        setLoading(false);
+        return;
+      }
+
+      // Steps 2 & 3 require auth — wait until auth is resolved
+      if (authLoading || !isAuthenticated) return;
+
+      // 2. Sync from server interview_sessions table
       if (!s || !s.recommendation) {
         try {
           const serverSessions = await loadSessionsFromServer();
@@ -215,7 +223,7 @@ export default function Result() {
         }
       }
 
-      // 3. If still no recommendation, try the completed_interviews table by sessionId
+      // 3. Fallback: completed_interviews table
       if (!s?.recommendation) {
         try {
           const res = await fetch(`/api/interview-result/${encodeURIComponent(sessionId)}`);
@@ -235,7 +243,6 @@ export default function Result() {
               };
               recovered.recommendation = record.recommendation;
               s = recovered;
-              // Persist recovered session to localStorage so repeat loads are instant
               saveSession(recovered);
             }
           }
@@ -251,7 +258,7 @@ export default function Result() {
     }
 
     loadSession();
-  }, [params?.sessionId]);
+  }, [params?.sessionId, authLoading, isAuthenticated]);
 
   const countedScore = useCountUp(session?.recommendation?.matchScore ?? 0, 1400);
 
