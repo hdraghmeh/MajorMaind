@@ -43,6 +43,7 @@ export default function Interview() {
   const [input, setInput] = useState("");
   const [avatarState, setAvatarState] = useState<AvatarState>("idle");
   const [microReaction, setMicroReaction] = useState<string | null>(null);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
@@ -70,11 +71,11 @@ export default function Interview() {
     setSession(s);
 
     if (s.messages.length === 0 && !initialized.current) {
-      initialized.current = true;
+      // Show disclaimer before starting the first turn
       const profile = getStudentProfile();
       const profileCtx = profile?.name ? buildProfileContext(profile) : null;
       profileContextRef.current = profileCtx;
-      runTurn([], s, false, profileCtx);
+      setShowDisclaimer(true);
     } else if (s.messages.length > 0) {
       const profile = getStudentProfile();
       profileContextRef.current = profile?.name ? buildProfileContext(profile) : null;
@@ -201,6 +202,13 @@ export default function Interview() {
     }
   };
 
+  const handleDisclaimerAccept = () => {
+    if (!session || initialized.current) return;
+    initialized.current = true;
+    setShowDisclaimer(false);
+    runTurn([], session, false, profileContextRef.current);
+  };
+
   const handleForceFinalize = async () => {
     if (!session || avatarState === "thinking") return;
     await runTurn(session.messages, session, true, profileContextRef.current);
@@ -223,6 +231,67 @@ export default function Interview() {
       className="flex flex-col"
       style={{ background: "var(--background)", height: "100dvh", maxHeight: "100dvh", overflow: "hidden" }}
     >
+      {/* ── Beta disclaimer modal ── */}
+      {showDisclaimer && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl p-6 flex flex-col gap-4"
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+              direction: "rtl",
+            }}
+          >
+            {/* Badge */}
+            <div className="flex items-center gap-2">
+              <span
+                className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                style={{ background: "color-mix(in oklab, #f59e0b 15%, transparent)", color: "#92400e", border: "1px solid color-mix(in oklab, #f59e0b 30%, transparent)" }}
+              >
+                نسخة تجريبية
+              </span>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-base font-semibold leading-snug" style={{ color: "var(--foreground)" }}>
+              قبل أن نبدأ — اقرأ هذا بعناية
+            </h2>
+
+            {/* Points */}
+            <ul className="flex flex-col gap-3 text-sm leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+              <li className="flex gap-2">
+                <span className="mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full mt-2" style={{ background: "#71151a" }} />
+                <span>هذا الموقع <strong style={{ color: "var(--foreground)" }}>تحت التجربة</strong> — قد لا تكون التوصيات مثالية في كل الحالات.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full mt-2" style={{ background: "#71151a" }} />
+                <span>أجب على أسئلة المستشار بصدق وتفصيل — <strong style={{ color: "var(--foreground)" }}>لا تسأل أسئلة</strong>، فقط أجب عما يطرحه عليك.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full mt-2" style={{ background: "#71151a" }} />
+                <span>المستشار سيساعدك تفهم <strong style={{ color: "var(--foreground)" }}>أي تخصص يناسبك</strong> بناءً على شخصيتك واهتماماتك.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full mt-2" style={{ background: "#84e4a8" }} />
+                <span>بعد انتهاء المقابلة، <strong style={{ color: "var(--foreground)" }}>لا تنسَ تسجيل ملاحظاتك</strong> في نموذج الملاحظات — رأيك يساعدنا نحسّن التجربة.</span>
+              </li>
+            </ul>
+
+            {/* CTA */}
+            <Button
+              onPress={handleDisclaimerAccept}
+              className="w-full rounded-xl font-semibold text-sm h-11 mt-1"
+              style={{ background: "#71151a", color: "#fff" }}
+            >
+              فهمت — لنبدأ المقابلة
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* ── Progress header ── */}
       <header
