@@ -4,6 +4,7 @@ import interviewRouter from "./interview";
 import authRouter from "./auth";
 import interviewSessionsRouter from "./interviewSessions";
 import adminRouter from "./admin";
+import feedbackRouter from "./feedback";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(authRouter);
 router.use(interviewRouter);
 router.use(interviewSessionsRouter);
 router.use(adminRouter);
+router.use(feedbackRouter);
 
 export default router;

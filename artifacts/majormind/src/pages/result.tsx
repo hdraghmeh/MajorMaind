@@ -3,7 +3,7 @@ import { useRoute, useLocation } from "wouter";
 import { useAuth } from "@workspace/replit-auth-web";
 import { getSession, saveSession, loadSessionsFromServer, mergeServerSessions, createSession, type StoredSession } from "@/lib/sessions";
 import { Button, Card, CardContent, CardHeader, CardTitle, Chip } from "@heroui/react";
-import { ArrowRight, Copy, Download, ExternalLink, GraduationCap, Lightbulb, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowRight, Copy, Download, ExternalLink, GraduationCap, Lightbulb, RefreshCw, Sparkles, Star, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import logoUrl from "/logo.png";
 
@@ -67,6 +67,114 @@ function FadeIn({ children, delay = 0, className = "" }: { children: React.React
     >
       {children}
     </div>
+  );
+}
+
+function FeedbackForm({ sessionId }: { sessionId?: string }) {
+  const [rating, setRating] = useState(0);
+  const [hovered, setHovered] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async () => {
+    if (!rating) return;
+    setSubmitting(true);
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ sessionId, rating, comment: comment.trim() || undefined }),
+      });
+      setSubmitted(true);
+    } catch {
+      toast({ title: "تعذّر إرسال التقييم", description: "يرجى المحاولة مجدداً.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div
+        className="rounded-2xl px-6 py-5 text-center space-y-1"
+        style={{
+          background: "color-mix(in oklab, #84e4a8 10%, var(--surface))",
+          border: "1px solid color-mix(in oklab, #84e4a8 28%, transparent)",
+        }}
+      >
+        <p className="font-semibold text-sm" style={{ color: "#1a5c3a" }}>شكراً على تقييمك</p>
+        <p className="text-xs text-muted-foreground">رأيك يساعدنا على تحسين التجربة</p>
+      </div>
+    );
+  }
+
+  return (
+    <Card style={{ boxShadow: "var(--surface-shadow)" }}>
+      <CardContent className="p-5 space-y-4">
+        <p className="text-sm font-medium text-center" style={{ color: "#71151a" }}>
+          كيف كانت تجربتك مع المقابلة؟
+        </p>
+
+        {/* Stars */}
+        <div className="flex justify-center gap-2" dir="ltr">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => setRating(star)}
+              onMouseEnter={() => setHovered(star)}
+              onMouseLeave={() => setHovered(0)}
+              className="transition-transform duration-150 hover:scale-110 focus:outline-none"
+            >
+              <Star
+                className="w-8 h-8"
+                style={{
+                  fill: star <= (hovered || rating) ? "#f59e0b" : "transparent",
+                  color: star <= (hovered || rating) ? "#f59e0b" : "var(--border)",
+                  transition: "fill 0.15s, color 0.15s",
+                }}
+              />
+            </button>
+          ))}
+        </div>
+
+        {/* Star label */}
+        {(hovered || rating) > 0 && (
+          <p className="text-center text-xs text-muted-foreground">
+            {["", "ضعيفة", "مقبولة", "جيدة", "جيدة جداً", "ممتازة"][hovered || rating]}
+          </p>
+        )}
+
+        {/* Comment */}
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="شاركنا تجربتك أو أي ملاحظة (اختياري)..."
+          maxLength={500}
+          rows={3}
+          className="w-full text-sm rounded-xl px-4 py-2.5 resize-none outline-none transition-all duration-200"
+          style={{
+            direction: "rtl",
+            background: "var(--background)",
+            border: "1px solid var(--border)",
+            color: "var(--foreground)",
+          }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = "#84e4a8")}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+        />
+
+        <Button
+          onPress={handleSubmit}
+          isDisabled={!rating || submitting}
+          variant="primary"
+          className="w-full rounded-xl py-4 text-sm font-medium"
+        >
+          {submitting ? "جاري الإرسال..." : "إرسال التقييم"}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -436,6 +544,11 @@ export default function Result() {
               </p>
             </CardContent>
           </Card>
+        </FadeIn>
+
+        {/* Feedback */}
+        <FadeIn delay={820}>
+          <FeedbackForm sessionId={params?.sessionId} />
         </FadeIn>
 
         {/* AAUP CTA */}
