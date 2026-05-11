@@ -79,6 +79,11 @@ const RESPONSE_SCHEMA = {
             careerAdvice: { type: "array", items: { type: "string" } },
             closingMessage: { type: "string" },
             admissionNote: { type: ["string", "null"] },
+            studentInterests: {
+              type: "array",
+              items: { type: "string" },
+              description: "3-6 concise interest keywords inferred from the student's answers (e.g. 'التقنية', 'الطب', 'ريادة الأعمال').",
+            },
           },
           required: [
             "recommendedMajor",
@@ -89,6 +94,7 @@ const RESPONSE_SCHEMA = {
             "careerAdvice",
             "closingMessage",
             "admissionNote",
+            "studentInterests",
           ],
         },
       ],

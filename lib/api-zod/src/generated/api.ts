@@ -147,6 +147,9 @@ export const InterviewTurnResponse = zod.object({
           .describe(
             "Optional note about AAUP admission requirements and GPA eligibility.",
           ),
+        studentInterests: zod
+          .array(zod.string())
+          .describe("3-6 concise interest keywords inferred from the student's answers."),
       }),
       zod.null(),
     ])

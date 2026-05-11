@@ -1,4 +1,4 @@
-import { integer, jsonb, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 import { usersTable } from "./auth";
 
 export const completedInterviewsTable = pgTable("completed_interviews", {
@@ -11,6 +11,7 @@ export const completedInterviewsTable = pgTable("completed_interviews", {
   recommendedMajor: varchar("recommended_major").notNull(),
   matchScore: integer("match_score").notNull(),
   totalMessages: integer("total_messages").notNull(),
+  studentInterests: text("student_interests"),
   record: jsonb("record").notNull(),
 });
 

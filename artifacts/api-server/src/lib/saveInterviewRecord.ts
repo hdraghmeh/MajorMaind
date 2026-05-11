@@ -15,6 +15,7 @@ export interface InterviewRecommendation {
   careerAdvice: string[];
   closingMessage: string;
   admissionNote?: string | null;
+  studentInterests?: string[];
 }
 
 export interface InterviewRecordUser {
@@ -85,6 +86,7 @@ export async function saveInterviewRecord(
     recommendedMajor: recommendation.recommendedMajor,
     matchScore: recommendation.matchScore,
     totalMessages: messages.length,
+    studentInterests: recommendation.studentInterests?.join(", ") ?? null,
     record: record as unknown as Record<string, unknown>,
   });
 
