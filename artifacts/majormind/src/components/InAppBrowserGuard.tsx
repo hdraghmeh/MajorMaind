@@ -96,74 +96,116 @@ export default function InAppBrowserGuard({ children }: { children: React.ReactN
     setAndroidOpened(true);
   }
 
-  const menuHint = isInstagram
-    ? 'اضغط ··· أعلى الشاشة ← "فتح في المتصفح"'
-    : isFacebook
-    ? 'اضغط ··· في الزاوية ← "فتح في Safari"'
-    : null;
+  const appName = isInstagram ? "Instagram" : isFacebook ? "Facebook" : null;
+  const menuLocation = isInstagram ? "أعلى يمين الشاشة" : isFacebook ? "أسفل يمين الشاشة" : null;
+  const menuLabel = isInstagram ? "فتح في المتصفح الخارجي" : isFacebook ? "فتح في Safari" : null;
 
   if (isIOS) {
     return (
       <>
         <style>{sharedStyles}</style>
         <div dir="rtl" style={pageStyle}>
-          <div style={{ ...cardStyle, padding: "30px 22px 26px" }}>
-            <h1 style={{ fontSize: "20px", color: "#71151a", marginBottom: "4px", fontWeight: 700 }}>
-              افتح الموقع في Safari
+          <div style={{ ...cardStyle, padding: "28px 20px 24px" }}>
+            <h1 style={{ fontSize: "19px", color: "#71151a", marginBottom: "4px", fontWeight: 800 }}>
+              لا يمكن فتح الموقع هنا
             </h1>
             <p style={{ fontSize: "13px", color: "#888", marginBottom: "20px", lineHeight: "1.6" }}>
-              صوّر الـ QR بكاميرا هاتفك ← يفتح في Safari مباشرةً
+              {appName ? `متصفح ${appName} المدمج لا يدعم تسجيل الدخول` : "المتصفح المدمج لا يدعم تسجيل الدخول"}
             </p>
 
-            {qrDataUrl ? (
-              <div
-                className="qr-box qr-ring"
-                style={{
-                  display: "inline-block",
-                  borderRadius: "16px",
-                  border: "3px solid #84e4a8",
-                  padding: "6px",
-                  marginBottom: "18px",
-                  background: "#fff",
-                }}
-              >
-                <img
-                  src={qrDataUrl}
-                  alt="QR code"
-                  width={188}
-                  height={188}
-                  style={{ display: "block", borderRadius: "10px" }}
-                />
-              </div>
-            ) : (
+            {/* ── الطريقة الأولى: قائمة ··· ── */}
+            {menuLocation && menuLabel && (
               <div style={{
-                width: 200, height: 200, margin: "0 auto 18px",
-                borderRadius: "16px", background: "#f0f0ea",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "13px", color: "#aaa",
+                background: "#f0fdf4",
+                border: "2px solid #84e4a8",
+                borderRadius: "14px",
+                padding: "16px 14px",
+                marginBottom: "16px",
+                textAlign: "right",
               }}>
-                جارٍ التحميل...
+                <div style={{ fontSize: "13px", fontWeight: 800, color: "#1a5c3a", marginBottom: "10px" }}>
+                  الطريقة الأسهل — ضغطة واحدة
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#333" }}>
+                    <span style={{
+                      background: "#71151a", color: "#fff",
+                      borderRadius: "50%", width: 22, height: 22, flexShrink: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "12px", fontWeight: 800,
+                    }}>١</span>
+                    اضغط <strong style={{ background: "#e8e8e8", padding: "1px 7px", borderRadius: "6px", fontFamily: "monospace", fontSize: "15px" }}>···</strong> من {menuLocation}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#333" }}>
+                    <span style={{
+                      background: "#71151a", color: "#fff",
+                      borderRadius: "50%", width: 22, height: 22, flexShrink: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "12px", fontWeight: 800,
+                    }}>٢</span>
+                    اختر <strong>"{menuLabel}"</strong>
+                  </div>
+                </div>
               </div>
             )}
 
+            {/* ── فاصل "أو" ── */}
             <div style={{
-              fontSize: "13px", color: "#555", lineHeight: "1.7",
-              background: "#f0fdf4", borderRadius: "10px",
-              padding: "10px 14px", marginBottom: "14px", textAlign: "right",
+              display: "flex", alignItems: "center", gap: "10px",
+              marginBottom: "16px",
             }}>
-              افتح تطبيق الكاميرا ← وجّهه للـ QR ← اضغط الرابط الذي يظهر
+              <div style={{ flex: 1, height: 1, background: "#e5e5e5" }} />
+              <span style={{ fontSize: "12px", color: "#aaa" }}>أو</span>
+              <div style={{ flex: 1, height: 1, background: "#e5e5e5" }} />
             </div>
 
-            {menuHint && (
-              <div style={{
-                background: "#fff8e1", border: "1px solid #ffe082",
-                borderRadius: "10px", padding: "10px 14px", marginBottom: "14px",
-                fontSize: "12px", color: "#5d4037", textAlign: "right",
-              }}>
-                أو أسرع: {menuHint}
+            {/* ── الطريقة الثانية: QR ── */}
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ fontSize: "12px", color: "#888", marginBottom: "10px" }}>
+                صوّر الـ QR بكاميرا هاتفك ← يفتح في Safari تلقائياً
               </div>
-            )}
+              {qrDataUrl ? (
+                <div
+                  className="qr-box qr-ring"
+                  style={{
+                    display: "inline-block",
+                    borderRadius: "14px",
+                    border: "3px solid #84e4a8",
+                    padding: "5px",
+                    background: "#fff",
+                  }}
+                >
+                  <img
+                    src={qrDataUrl}
+                    alt="QR code"
+                    width={160}
+                    height={160}
+                    style={{ display: "block", borderRadius: "9px" }}
+                  />
+                </div>
+              ) : (
+                <div style={{
+                  width: 160, height: 160, margin: "0 auto",
+                  borderRadius: "14px", background: "#f0f0ea",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "12px", color: "#bbb",
+                }}>
+                  جارٍ التحميل...
+                </div>
+              )}
+            </div>
 
+            {/* ── فاصل "أو" ── */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: "10px",
+              marginBottom: "12px",
+            }}>
+              <div style={{ flex: 1, height: 1, background: "#e5e5e5" }} />
+              <span style={{ fontSize: "12px", color: "#aaa" }}>أو</span>
+              <div style={{ flex: 1, height: 1, background: "#e5e5e5" }} />
+            </div>
+
+            {/* ── نسخ الرابط ── */}
             <button
               onClick={handleCopy}
               style={{
