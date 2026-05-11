@@ -3,7 +3,7 @@ import { useRoute, useLocation } from "wouter";
 import { useAuth } from "@workspace/replit-auth-web";
 import { getSession, saveSession, loadSessionsFromServer, mergeServerSessions, createSession, type StoredSession } from "@/lib/sessions";
 import { Button, Card, CardContent, CardHeader, CardTitle, Chip } from "@heroui/react";
-import { ArrowRight, Copy, Download, ExternalLink, FileDown, GraduationCap, Lightbulb, Loader2, RefreshCw, Sparkles, Star, TrendingUp } from "lucide-react";
+import { ArrowRight, Copy, ExternalLink, GraduationCap, Lightbulb, RefreshCw, Sparkles, Star, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import logoUrl from "/logo.png";
 
@@ -185,8 +185,6 @@ export default function Result() {
   const { toast } = useToast();
   const [session, setSession] = useState<StoredSession | null>(null);
   const [loading, setLoading] = useState(true);
-  const [pdfLoading, setPdfLoading] = useState(false);
-  const pdfRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -280,67 +278,6 @@ export default function Result() {
     toast({ title: "تم النسخ إلى الحافظة" });
   }, [session?.recommendation]);
 
-  const handleExportPDF = useCallback(async () => {
-    if (!pdfRef.current || pdfLoading) return;
-    setPdfLoading(true);
-    try {
-      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-        import("html2canvas"),
-        import("jspdf"),
-      ]);
-
-      const el = pdfRef.current;
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#faf9f6",
-        logging: false,
-        scrollX: 0,
-        scrollY: -window.scrollY,
-        windowWidth: el.scrollWidth,
-        windowHeight: el.scrollHeight,
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const usableW = pageW - margin * 2;
-      const imgW = canvas.width;
-      const imgH = canvas.height;
-      const scaledH = (imgH * usableW) / imgW;
-
-      let yOffset = 0;
-      let page = 0;
-
-      while (yOffset < scaledH) {
-        if (page > 0) pdf.addPage();
-        const srcY = (yOffset / scaledH) * imgH;
-        const sliceH = Math.min((pageH - margin * 2) / scaledH * imgH, imgH - srcY);
-        const sliceCanvas = document.createElement("canvas");
-        sliceCanvas.width = imgW;
-        sliceCanvas.height = sliceH;
-        const ctx = sliceCanvas.getContext("2d")!;
-        ctx.drawImage(canvas, 0, srcY, imgW, sliceH, 0, 0, imgW, sliceH);
-        const sliceData = sliceCanvas.toDataURL("image/png");
-        const sliceScaledH = (sliceH / imgH) * scaledH;
-        pdf.addImage(sliceData, "PNG", margin, margin, usableW, sliceScaledH);
-        yOffset += pageH - margin * 2;
-        page++;
-      }
-
-      const major = session?.recommendation?.recommendedMajor ?? "result";
-      const fname = `majormind-${major.replace(/\s+/g, "-")}-${session?.id?.slice(0, 8) ?? "export"}.pdf`;
-      pdf.save(fname);
-    } catch {
-      toast({ title: "تعذّر إنشاء ملف PDF", description: "يرجى المحاولة مجدداً.", variant: "destructive" });
-    } finally {
-      setPdfLoading(false);
-    }
-  }, [pdfLoading, session?.recommendation?.recommendedMajor, session?.id]);
 
   if (loading) {
     return (
@@ -386,18 +323,11 @@ export default function Result() {
               <Copy className="w-3.5 h-3.5 sm:ml-1.5" />
               <span className="hidden sm:inline">نسخ</span>
             </Button>
-            <Button variant="outline" size="sm" onPress={handleExportPDF} isDisabled={pdfLoading}>
-              {pdfLoading
-                ? <Loader2 className="w-3.5 h-3.5 sm:ml-1.5 animate-spin" />
-                : <FileDown className="w-3.5 h-3.5 sm:ml-1.5" />
-              }
-              <span className="hidden sm:inline">{pdfLoading ? "جاري التصدير..." : "تصدير PDF"}</span>
-            </Button>
           </div>
         </div>
       </header>
 
-      <main ref={pdfRef} className="max-w-3xl mx-auto px-4 md:px-6 pb-24 pt-10 space-y-6">
+      <main className="max-w-3xl mx-auto px-4 md:px-6 pb-24 pt-10 space-y-6">
 
         {/* Title badge */}
         <FadeIn delay={0} className="text-center space-y-3">
@@ -651,18 +581,6 @@ export default function Result() {
           >
             <RefreshCw className="w-4 h-4 ml-2 group-hover:rotate-180 transition-transform duration-500" />
             بدء مقابلة جديدة
-          </Button>
-          <Button
-            variant="outline"
-            onPress={handleExportPDF}
-            isDisabled={pdfLoading}
-            className="py-5 rounded-xl flex items-center gap-2"
-          >
-            {pdfLoading
-              ? <Loader2 className="w-4 h-4 animate-spin" />
-              : <FileDown className="w-4 h-4" />
-            }
-            {pdfLoading ? "جاري إنشاء PDF..." : "تحميل PDF"}
           </Button>
         </FadeIn>
       </main>
