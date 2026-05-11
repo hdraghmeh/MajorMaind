@@ -184,7 +184,7 @@ async function runTurn(
 
   const attemptTurn = async (timeoutMs: number): Promise<Awaited<ReturnType<typeof openai.chat.completions.create>>> => {
     return openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5",
       messages: chatMessages,
       response_format: {
         type: "json_schema",
