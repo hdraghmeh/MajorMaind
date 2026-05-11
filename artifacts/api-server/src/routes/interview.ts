@@ -239,6 +239,82 @@ async function runTurn(
       return res.status(500).json({ error: "AI output failed validation" });
     }
 
+    // Hard GPA eligibility guard — strip any majors the AI suggested that the
+    // student's GPA does not meet, so ineligible majors are never shown.
+    if (validated.data.kind === "result" && validated.data.recommendation && profileContext) {
+      const fields = extractProfileFields(profileContext);
+      if (fields) {
+        const eligible = getEligibleMajors(fields.stream, fields.gpa);
+        const eligibleNames = new Set(eligible.map((m) => m.name.toLowerCase().trim()));
+
+        const isEligible = (name: string) => eligibleNames.has(name.toLowerCase().trim());
+
+        const rec = validated.data.recommendation;
+
+        // Filter alternative majors first so we have a pool to promote from.
+        const filteredAlts = rec.alternativeMajors.filter((name) => {
+          if (isEligible(name)) return true;
+          req.log?.warn(
+            { major: name, gpa: fields.gpa, stream: fields.stream },
+            "GPA guard: stripped ineligible alternative major from AI response",
+          );
+          return false;
+        });
+
+        // Check the primary recommendation.
+        if (!isEligible(rec.recommendedMajor)) {
+          req.log?.warn(
+            { major: rec.recommendedMajor, gpa: fields.gpa, stream: fields.stream },
+            "GPA guard: recommended major is ineligible — replacing with first eligible alternative",
+          );
+          // First try to promote the highest-priority eligible alternative.
+          let replacement = filteredAlts.shift();
+
+          if (!replacement) {
+            // No AI-suggested alternatives survived — fall back to the first
+            // entry from the full eligible catalog so we never return an
+            // ineligible primary recommendation.
+            const catalogFallback = eligible[0];
+            if (catalogFallback) {
+              replacement = catalogFallback.name;
+              req.log?.warn(
+                { major: replacement, gpa: fields.gpa, stream: fields.stream },
+                "GPA guard: using catalog fallback for recommended major",
+              );
+            } else {
+              // Truly no eligible major exists (unknown stream edge case) —
+              // force the first zero-minScore major from the catalog so we
+              // never return an unverifiable recommendation.
+              const zeroScore = AAUP_MAJORS.find((m) =>
+                m.allowedBranches.some((b) => b.minScore === 0),
+              );
+              if (zeroScore) {
+                replacement = zeroScore.name;
+                req.log?.warn(
+                  { major: replacement, gpa: fields.gpa, stream: fields.stream },
+                  "GPA guard: no eligible catalog entry — forced zero-minScore fallback",
+                );
+              } else {
+                req.log?.warn(
+                  { major: rec.recommendedMajor, gpa: fields.gpa, stream: fields.stream },
+                  "GPA guard: no replacement found at all — leaving recommendation unchanged",
+                );
+              }
+            }
+          }
+
+          if (replacement) {
+            rec.recommendedMajor = replacement;
+          }
+        }
+
+        // Remove the promoted major from alternatives to avoid duplication.
+        rec.alternativeMajors = filteredAlts.filter(
+          (name) => name.toLowerCase().trim() !== rec.recommendedMajor.toLowerCase().trim(),
+        );
+      }
+    }
+
     // Save completed interview record when the AI delivers its final recommendation.
     // Awaited so any failure is detected and logged before returning to the client.
     if (validated.data.kind === "result" && validated.data.recommendation) {

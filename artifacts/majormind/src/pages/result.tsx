@@ -382,6 +382,12 @@ export default function Result() {
                 </p>
               </div>
             )}
+            <p
+              className="text-xs mt-3 leading-relaxed"
+              style={{ color: "rgba(255,255,255,0.5)", direction: "rtl" }}
+            >
+              هذه التخصصات مُدرجة حالياً في الجامعة العربية الأمريكية — وقريباً سيتم إضافة جامعات أخرى.
+            </p>
           </div>
         </FadeIn>
 
@@ -466,9 +472,14 @@ export default function Result() {
 
         {/* Alternative majors */}
         <FadeIn delay={550} className="space-y-4">
-          <div className="flex items-center gap-2 font-medium" style={{ color: "#71151a" }}>
-            <GraduationCap className="w-5 h-5" style={{ color: "var(--accent-foreground)" }} />
-            التخصصات البديلة
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 font-medium" style={{ color: "#71151a" }}>
+              <GraduationCap className="w-5 h-5" style={{ color: "var(--accent-foreground)" }} />
+              التخصصات البديلة
+            </div>
+            <span className="text-xs text-muted-foreground" style={{ direction: "rtl" }}>
+              بيانات الجامعة العربية الأمريكية — جامعات أخرى قريباً
+            </span>
           </div>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
             {r.alternativeMajors.map((major, i) => (
