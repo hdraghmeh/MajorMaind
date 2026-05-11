@@ -194,10 +194,10 @@ async function runTurn(
   try {
     let completion: Awaited<ReturnType<typeof openai.chat.completions.create>>;
     try {
-      completion = await attemptTurn(55_000);
+      completion = await attemptTurn(28_000);
     } catch (firstErr) {
       req.log?.warn({ err: firstErr }, "interview turn first attempt failed — retrying once");
-      completion = await attemptTurn(55_000);
+      completion = await attemptTurn(28_000);
     }
 
     const raw = completion.choices[0]?.message?.content;

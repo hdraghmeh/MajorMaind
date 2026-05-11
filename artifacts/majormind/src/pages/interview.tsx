@@ -96,16 +96,32 @@ export default function Interview() {
     setAvatarState("thinking");
     setMicroReaction(null);
 
-    const TURN_TIMEOUT_MS = 130_000;
+    const TURN_TIMEOUT_MS = 75_000;
 
-    try {
-      const turnPromise = turnMutation.mutateAsync({
+    const doFetch = () =>
+      turnMutation.mutateAsync({
         data: { messages: currentMessages, forceFinalize, profileContext: profileContext ?? undefined, sessionId: s.id },
       });
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("timeout")), TURN_TIMEOUT_MS),
-      );
-      const response = await Promise.race([turnPromise, timeoutPromise]);
+
+    const withTimeout = (fn: () => ReturnType<typeof doFetch>) =>
+      Promise.race([
+        fn(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), TURN_TIMEOUT_MS),
+        ),
+      ]);
+
+    try {
+      let response: Awaited<ReturnType<typeof doFetch>>;
+      try {
+        response = await withTimeout(doFetch);
+      } catch (firstErr) {
+        // Only retry on server-side errors (not timeout or network loss)
+        if (firstErr instanceof Error && (firstErr.message === "timeout" || firstErr.name === "TypeError")) {
+          throw firstErr;
+        }
+        response = await withTimeout(doFetch);
+      }
 
       const newSession = { ...s };
 
@@ -201,7 +217,10 @@ export default function Interview() {
   const isBusy = avatarState === "thinking" || avatarState === "speaking" || avatarState === "result";
 
   return (
-    <div className="flex flex-col h-[100dvh]" style={{ background: "var(--background)" }}>
+    <div
+      className="flex flex-col"
+      style={{ background: "var(--background)", height: "100dvh", maxHeight: "100dvh", overflow: "hidden" }}
+    >
 
       {/* ── Progress header ── */}
       <header
@@ -262,10 +281,23 @@ export default function Interview() {
         <div className="max-w-2xl mx-auto px-4 py-5 space-y-4 pb-6">
 
           {session.messages.length === 0 && avatarState === "thinking" && (
-            <div className="text-center py-6">
+            <div className="text-center py-6 space-y-2">
               <p className="text-sm text-muted-foreground italic animate-pulse">
                 مستشارك يستعد...
               </p>
+            </div>
+          )}
+
+          {avatarState === "thinking" && session.messages.length > 0 && (
+            <div
+              className="text-center text-xs py-1 px-3 mx-auto w-fit rounded-full"
+              style={{
+                background: "color-mix(in oklab, #f59e0b 10%, transparent)",
+                color: "#92400e",
+                border: "1px solid color-mix(in oklab, #f59e0b 25%, transparent)",
+              }}
+            >
+              حافظ على شاشتك مضاءة أثناء الانتظار
             </div>
           )}
 
@@ -331,8 +363,12 @@ export default function Interview() {
 
       {/* ── Input ── */}
       <footer
-        className="flex-none p-3 border-t border-[--border]"
-        style={{ background: "var(--surface)" }}
+        className="flex-none border-t border-[--border]"
+        style={{
+          background: "var(--surface)",
+          padding: "0.75rem",
+          paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
+        }}
       >
         <div className="max-w-2xl mx-auto">
           <form onSubmit={handleSubmit} className="flex items-center gap-2">
