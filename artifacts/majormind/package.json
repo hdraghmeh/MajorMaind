@@ -78,6 +78,8 @@
   "dependencies": {
     "@heroui/react": "^3.0.4",
     "@heroui/styles": "^3.0.4",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "react-aria-components": "^1.17.0"
   }
 }
