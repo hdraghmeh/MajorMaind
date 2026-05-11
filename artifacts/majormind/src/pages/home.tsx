@@ -56,8 +56,8 @@ const FEATURES = [
 const STATS = [
   { label: "سؤالاً في كل مقابلة", display: "٨–١٢", countTo: null },
   { label: "تخصص جامعي مغطى",    display: "+١٠٠",  countTo: 100, prefix: "+", arabicDigits: true },
-  { label: "متوسط وقت الجلسة",   display: "٣ دق",   countTo: 3,   suffix: " دق", arabicDigits: true },
-  { label: "فروع توجيهي مغطاة", display: "٤", countTo: 4, arabicDigits: true },
+  { label: "متوسط وقت الجلسة",   display: "٥ دق",   countTo: 5,   suffix: " دق", arabicDigits: true },
+  { label: "فروع توجيهي مغطاة", display: "٧", countTo: 7, arabicDigits: true },
 ];
 
 function useReveal(delay = 0, type: "reveal" | "reveal-scale" | "reveal-right" = "reveal") {
