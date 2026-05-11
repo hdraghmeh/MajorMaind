@@ -2,6 +2,7 @@ import { isNull } from "drizzle-orm";
 import { db, interviewSessionsTable, completedInterviewsTable } from "@workspace/db";
 import app from "./app";
 import { logger } from "./lib/logger";
+import { cleanupStats } from "./lib/cleanupStats";
 
 const MAX_LOGGED_IDS = 10;
 
@@ -33,6 +34,10 @@ async function cleanupNullUserRows(): Promise<void> {
       "Startup cleanup: deleted completed_interviews rows with NULL user_id",
     );
   }
+
+  const totalRemoved = deletedSessions.length + deletedInterviews.length;
+  cleanupStats.lastCleanupAt = new Date().toISOString();
+  cleanupStats.rowsRemovedAtLastCleanup = totalRemoved;
 }
 
 const rawPort = process.env["PORT"];
