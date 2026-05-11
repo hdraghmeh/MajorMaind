@@ -90,13 +90,13 @@ export default function Interview() {
     s: StoredSession,
     forceFinalize?: boolean,
     profileContext?: string | null,
-  ) => {
+  ): Promise<boolean> => {
     const hasStudentPrior = currentMessages.some((m) => m.role === "student");
 
     setAvatarState("thinking");
     setMicroReaction(null);
 
-    const TURN_TIMEOUT_MS = 55_000;
+    const TURN_TIMEOUT_MS = 130_000;
 
     try {
       const turnPromise = turnMutation.mutateAsync({
@@ -144,6 +144,8 @@ export default function Interview() {
         await wait(1400);
         setLocation(`/result/${newSession.id}`);
       }
+
+      return true;
     } catch (err: unknown) {
       setAvatarState("idle");
       const isTimeout = err instanceof Error && err.message === "timeout";
@@ -154,6 +156,7 @@ export default function Interview() {
           ? "تعذّر الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً."
           : "تعذّر الوصول إلى المستشار. يرجى المحاولة مجدداً.";
       toast({ title: "خطأ في الاتصال", description, variant: "destructive" });
+      return false;
     }
   };
 
@@ -168,11 +171,16 @@ export default function Interview() {
     const updatedMessages = [...session.messages, newMessage];
     const updatedSession = { ...session, messages: updatedMessages };
 
-    saveSession(updatedSession);
+    // Show student message immediately in UI, but only persist AFTER successful response
     setSession(updatedSession);
     setInput("");
 
-    await runTurn(updatedMessages, updatedSession, false, profileContextRef.current);
+    const ok = await runTurn(updatedMessages, updatedSession, false, profileContextRef.current);
+
+    // Rollback to previous session state if the turn failed (keeps history clean)
+    if (!ok) {
+      setSession(session);
+    }
   };
 
   const handleForceFinalize = async () => {
