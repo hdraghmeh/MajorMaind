@@ -242,7 +242,7 @@ export default function Profile() {
   return (
     <div className="min-h-[100dvh] flex flex-col" style={{ background: "var(--background)" }}>
       {/* Header */}
-      <header className="border-b border-[--border] px-5 py-3 flex items-center gap-3"
+      <header className="px-5 py-3 flex items-center gap-3"
         style={{ background: "var(--surface)" }}>
         <button onClick={() => setLocation("/")} className="hover:opacity-70 transition-opacity">
           <img src={logoUrl} alt="MajorMind" className="h-8 w-auto object-contain" />
@@ -252,7 +252,7 @@ export default function Profile() {
       </header>
 
       {/* Progress bar */}
-      <div className="flex border-b border-[--border]" style={{ background: "var(--surface-secondary)" }}>
+      <div className="flex" style={{ background: "var(--surface-secondary)" }}>
         {STEPS.map((s, i) => {
           const Icon = s.icon;
           const done = i < step;
@@ -501,7 +501,7 @@ export default function Profile() {
       </div>
 
       {/* Footer navigation */}
-      <footer className="border-t border-[--border] px-5 py-4"
+      <footer className="px-5 py-4"
         style={{ background: "var(--surface)" }}>
         <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
           <Button
