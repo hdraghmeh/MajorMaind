@@ -49,11 +49,28 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
+const CLEANUP_INTERVAL_MS = 6 * 60 * 60 * 1000; // every 6 hours
+
+function schedulePeriodicCleanup(): void {
+  setInterval(() => {
+    cleanupNullUserRows().catch((err) => {
+      logger.error({ err }, "Periodic cleanup failed");
+    });
+  }, CLEANUP_INTERVAL_MS);
+
+  logger.info(
+    { intervalHours: 6 },
+    "Periodic NULL-row cleanup scheduled",
+  );
+}
+
 cleanupNullUserRows()
   .catch((err) => {
     logger.error({ err }, "Startup cleanup failed; server will continue");
   })
   .then(() => {
+    schedulePeriodicCleanup();
+
     app.listen(port, (err) => {
       if (err) {
         logger.error({ err }, "Error listening on port");
