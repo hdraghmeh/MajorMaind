@@ -96,7 +96,7 @@ export default function Interview() {
     setAvatarState("thinking");
     setMicroReaction(null);
 
-    const TURN_TIMEOUT_MS = 75_000;
+    const TURN_TIMEOUT_MS = 115_000; // 52 s per attempt × 2 + buffer
 
     const doFetch = () =>
       turnMutation.mutateAsync({
@@ -194,8 +194,10 @@ export default function Interview() {
     const ok = await runTurn(updatedMessages, updatedSession, false, profileContextRef.current);
 
     // Rollback to previous session state if the turn failed (keeps history clean)
+    // and restore the typed text so the user can retry without retyping.
     if (!ok) {
       setSession(session);
+      setInput(cleaned);
     }
   };
 
