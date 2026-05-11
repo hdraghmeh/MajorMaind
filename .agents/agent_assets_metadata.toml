@@ -1,0 +1,13 @@
+uploads = []
+
+[[generated]]
+id = "VxZV2_2b_t-YSiuveNPAi"
+uri = "file://artifacts/majormind/public/og-image.png"
+type = "image"
+title = "majormind-og-social-preview"
+
+[[outputs]]
+id = "lBuBeZsqCF6M30DZjre3e"
+uri = "file://artifacts/majormind/public/og-image.png"
+type = "image"
+title = "صورة معاينة الموقع على التواصل الاجتماعي"
