@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, interviewSessionsTable, completedInterviewsTable } from "@workspace/db";
-import { desc, eq, sql } from "drizzle-orm";
+import { db, interviewSessionsTable, completedInterviewsTable, usersTable } from "@workspace/db";
+import { and, desc, eq, sql, isNull, or } from "drizzle-orm";
 import { SaveInterviewSessionBody } from "@workspace/api-zod";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -92,6 +92,25 @@ router.put("/interview-sessions/:sessionId", async (req: Request, res: Response)
         updatedAt: new Date(),
       },
     });
+
+  // Back-fill user's first/last name from profileData if still empty
+  const profileData = parsed.data.profileData as Record<string, unknown> | null | undefined;
+  if (profileData?.name && typeof profileData.name === "string") {
+    const parts = (profileData.name as string).trim().split(/\s+/);
+    const firstName = parts[0] ?? null;
+    const lastName = parts.slice(1).join(" ") || null;
+    if (firstName) {
+      await db
+        .update(usersTable)
+        .set({ firstName, lastName })
+        .where(
+          and(
+            eq(usersTable.id, callerId),
+            or(isNull(usersTable.firstName), eq(usersTable.firstName, "")),
+          ),
+        );
+    }
+  }
 
   return res.json(sessionData);
 });
