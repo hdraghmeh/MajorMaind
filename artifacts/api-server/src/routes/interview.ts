@@ -178,7 +178,7 @@ async function runTurn(
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-5",
+      model: "gpt-4o",
       messages: chatMessages,
       response_format: {
         type: "json_schema",
