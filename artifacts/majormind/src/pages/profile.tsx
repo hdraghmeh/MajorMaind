@@ -261,17 +261,31 @@ export default function Profile() {
             <button
               key={s.id}
               onClick={() => i < step && setStep(i)}
-              className="flex-1 flex flex-col items-center gap-1 py-3 text-xs relative overflow-hidden"
+              className="flex-1 flex flex-col items-center gap-1 py-3 text-xs relative overflow-hidden group"
               style={{
                 color: active ? RED : done ? "#2a8f60" : "var(--muted-foreground)",
-                transition: "color 0.25s ease",
+                transition: "color 0.25s ease, transform 0.12s ease",
+                cursor: done ? "pointer" : "default",
               }}
+              onMouseDown={(e) => { if (done) (e.currentTarget as HTMLElement).style.transform = "scale(0.93)"; }}
+              onMouseUp={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
             >
+              {/* hover background */}
+              {done && (
+                <span className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  style={{ background: "color-mix(in oklab, #2a8f60 10%, transparent)" }} />
+              )}
+              {active && (
+                <span className="absolute inset-0 rounded-lg"
+                  style={{ background: `color-mix(in oklab, ${RED} 6%, transparent)` }} />
+              )}
+
               <Icon
                 key={`icon-${s.id}-${step}`}
-                className={`w-4 h-4 ${active ? "tab-icon-active" : done ? "tab-icon-done" : ""}`}
+                className={`w-4 h-4 relative z-10 ${active ? "tab-icon-active" : done ? "tab-icon-done" : ""}`}
               />
-              <span className="hidden sm:block font-medium">{s.label}</span>
+              <span className="hidden sm:block font-medium relative z-10">{s.label}</span>
 
               {/* animated bottom border */}
               <span
