@@ -110,8 +110,10 @@ export async function mergeServerSessions(serverSessions: StoredSession[]): Prom
 // record was successfully saved, so the home archive reflects completed status.
 export async function reconcileCompletedSessions(): Promise<void> {
   const local = getSessions();
+  // Only check sessions with ≥10 messages (≥5 advisor turns) — below that the
+  // interview never reached the result stage so a /api/interview-result call will always 404.
   const incomplete = Object.values(local).filter(
-    (s) => s.messages.length > 0 && !s.recommendation
+    (s) => s.messages.length >= 10 && !s.recommendation
   );
   if (incomplete.length === 0) return;
 

@@ -51,7 +51,7 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
             isAuthenticated && user ? (
               <Dropdown>
                 <DropdownTrigger>
-                  <button className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-[--surface-secondary] transition-colors text-sm font-medium">
+                  <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-[--surface-secondary] transition-colors text-sm font-medium cursor-pointer">
                     {user.profileImageUrl ? (
                       <Avatar
                         src={user.profileImageUrl}
@@ -67,7 +67,7 @@ export default function Navbar({ variant = "app" }: NavbarProps) {
                       </div>
                     )}
                     <span className="hidden sm:block text-foreground max-w-[120px] truncate">{displayName}</span>
-                  </button>
+                  </div>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="قائمة المستخدم">
                   <DropdownItem
