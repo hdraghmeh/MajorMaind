@@ -18,7 +18,9 @@ export interface StudentProfile {
   hobbies: string[];
   workPreference: "alone" | "team" | "both" | "";
   aspirations: string;
+  aspirationsCustom: string;
   concerns: string;
+  concernsCustom: string;
   completedAt: string;
 }
 
@@ -36,7 +38,9 @@ export const EMPTY_PROFILE: StudentProfile = {
   hobbies: [],
   workPreference: "",
   aspirations: "",
+  aspirationsCustom: "",
   concerns: "",
+  concernsCustom: "",
   completedAt: "",
 };
 
@@ -48,6 +52,8 @@ export function getStudentProfile(): StudentProfile | null {
     if (!Array.isArray(parsed.hobbies)) {
       parsed.hobbies = parsed.hobbies ? [parsed.hobbies as unknown as string] : [];
     }
+    if (parsed.aspirationsCustom === undefined) parsed.aspirationsCustom = "";
+    if (parsed.concernsCustom === undefined) parsed.concernsCustom = "";
     return parsed;
   } catch {
     return null;
@@ -79,8 +85,14 @@ export function buildProfileContext(profile: StudentProfile): string {
   const hobbiesArr = Array.isArray(profile.hobbies) ? profile.hobbies : (profile.hobbies ? [profile.hobbies as unknown as string] : []);
   if (hobbiesArr.length) lines.push(`الهوايات والاهتمامات: ${hobbiesArr.join("، ")}`);
   if (profile.workPreference) lines.push(`تفضيل بيئة العمل: ${profile.workPreference}`);
-  if (profile.aspirations) lines.push(`الطموحات المستقبلية: ${profile.aspirations}`);
-  if (profile.concerns) lines.push(`أبرز المخاوف بشأن المستقبل: ${profile.concerns}`);
+  if (profile.aspirations || profile.aspirationsCustom) {
+    const parts = [profile.aspirations, profile.aspirationsCustom].filter(Boolean);
+    lines.push(`الطموحات المستقبلية: ${parts.join(" — ")}`);
+  }
+  if (profile.concerns || profile.concernsCustom) {
+    const parts = [profile.concerns, profile.concernsCustom].filter(Boolean);
+    lines.push(`أبرز المخاوف بشأن المستقبل: ${parts.join(" — ")}`);
+  }
 
   return lines.join("\n");
 }

@@ -422,7 +422,7 @@ export default function Profile() {
                 </div>
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <FieldLabel>ما الذي تحلم بتحقيقه؟</FieldLabel>
                 <SelectDropdown
                   value={profile.aspirations}
@@ -430,15 +430,33 @@ export default function Profile() {
                   options={ASPIRATIONS_OPTIONS}
                   placeholder="اختر ما يعبّر عن طموحك..."
                 />
+                <input
+                  value={profile.aspirationsCustom ?? ""}
+                  onChange={(e) => set("aspirationsCustom", e.target.value)}
+                  placeholder="أو أضف طموحاً آخر بكلماتك الخاصة..."
+                  maxLength={200}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[--border] text-sm outline-none transition-all"
+                  style={{ background: "var(--surface)", color: "var(--foreground)" }}
+                  dir="rtl"
+                />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <FieldLabel>أكبر مخاوفك حول مستقبلك الدراسي</FieldLabel>
                 <SelectDropdown
                   value={profile.concerns}
                   onChange={(v) => set("concerns", v)}
                   options={CONCERNS_OPTIONS}
                   placeholder="اختر ما يعبّر عن مخاوفك..."
+                />
+                <input
+                  value={profile.concernsCustom ?? ""}
+                  onChange={(e) => set("concernsCustom", e.target.value)}
+                  placeholder="أو أضف ما يقلقك بكلماتك الخاصة..."
+                  maxLength={200}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[--border] text-sm outline-none transition-all"
+                  style={{ background: "var(--surface)", color: "var(--foreground)" }}
+                  dir="rtl"
                 />
               </div>
 
@@ -452,8 +470,16 @@ export default function Profile() {
                   {profile.favoriteSubjects.length > 0 && <p>المواد المفضلة: <span className="text-foreground font-medium">{profile.favoriteSubjects.slice(0, 3).join("، ")}{profile.favoriteSubjects.length > 3 ? "..." : ""}</span></p>}
                   {profile.careerInterests.length > 0 && <p>الاهتمامات: <span className="text-foreground font-medium">{profile.careerInterests.slice(0, 2).join("، ")}{profile.careerInterests.length > 2 ? "..." : ""}</span></p>}
                   {(profile.hobbies ?? []).length > 0 && <p>الهوايات: <span className="text-foreground font-medium">{profile.hobbies.slice(0, 2).join("، ")}{profile.hobbies.length > 2 ? "..." : ""}</span></p>}
-                  {profile.aspirations && <p>الطموح: <span className="text-foreground font-medium">{profile.aspirations}</span></p>}
-                  {profile.concerns && <p>المخاوف: <span className="text-foreground font-medium">{profile.concerns}</span></p>}
+                  {(profile.aspirations || profile.aspirationsCustom) && (
+                    <p>الطموح: <span className="text-foreground font-medium">
+                      {[profile.aspirations, profile.aspirationsCustom].filter(Boolean).join(" — ")}
+                    </span></p>
+                  )}
+                  {(profile.concerns || profile.concernsCustom) && (
+                    <p>المخاوف: <span className="text-foreground font-medium">
+                      {[profile.concerns, profile.concernsCustom].filter(Boolean).join(" — ")}
+                    </span></p>
+                  )}
                 </div>
               </div>
             </div>
