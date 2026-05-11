@@ -3,7 +3,7 @@ import { useRoute, useLocation } from "wouter";
 import { useAuth } from "@workspace/replit-auth-web";
 import { getSession, saveSession, loadSessionsFromServer, mergeServerSessions, createSession, type StoredSession } from "@/lib/sessions";
 import { Button, Card, CardContent, CardHeader, CardTitle, Chip } from "@heroui/react";
-import { ArrowRight, Copy, Download, GraduationCap, Lightbulb, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowRight, Copy, Download, ExternalLink, GraduationCap, Lightbulb, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import logoUrl from "/logo.png";
 
@@ -438,8 +438,36 @@ export default function Result() {
           </Card>
         </FadeIn>
 
+        {/* AAUP CTA */}
+        <FadeIn delay={780}>
+          <a
+            href="https://www.aaup.edu/ar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center justify-between gap-4 w-full rounded-2xl px-6 py-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+            style={{
+              background: "linear-gradient(135deg, #71151a 0%, #a01f26 100%)",
+              boxShadow: "0 4px 24px color-mix(in oklab, #71151a 30%, transparent)",
+            }}
+          >
+            <div className="flex items-center gap-3" style={{ direction: "rtl" }}>
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "rgba(255,255,255,0.15)" }}
+              >
+                <GraduationCap className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-white font-semibold text-sm leading-snug">تعرّف على الجامعة العربية الأمريكية</p>
+                <p className="text-white/60 text-xs mt-0.5">aaup.edu — استكشف تخصصاتك وفرص القبول</p>
+              </div>
+            </div>
+            <ExternalLink className="w-4 h-4 text-white/70 shrink-0 group-hover:text-white group-hover:translate-x-0.5 transition-all duration-200" />
+          </a>
+        </FadeIn>
+
         {/* Actions */}
-        <FadeIn delay={800} className="flex flex-col sm:flex-row gap-3 pt-2">
+        <FadeIn delay={900} className="flex flex-col sm:flex-row gap-3 pt-2">
           <Button
             onPress={() => { const s = createSession(); setLocation(`/interview/${s.id}`); }}
             variant="primary"
