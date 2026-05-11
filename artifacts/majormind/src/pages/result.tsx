@@ -272,7 +272,14 @@ export default function Result() {
     );
   }
 
-  if (!session || !session.recommendation) return null;
+  if (!session || !session.recommendation) {
+    return (
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background gap-4 px-6 text-center">
+        <p className="text-muted-foreground text-sm">تعذّر تحميل النتيجة. قد تكون المقابلة لم تكتمل بعد.</p>
+        <Button variant="outline" size="sm" onPress={() => setLocation("/")}>العودة إلى الرئيسية</Button>
+      </div>
+    );
+  }
   const r = session.recommendation;
   const altScores = r.alternativeMajors.map((_, i) => {
     const drop = [15, 23, 30, 37][i] ?? 40;

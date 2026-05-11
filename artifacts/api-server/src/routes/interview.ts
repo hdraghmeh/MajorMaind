@@ -7,6 +7,8 @@ import {
 } from "@workspace/api-zod";
 import { saveInterviewRecord } from "../lib/saveInterviewRecord";
 import { getEligibleMajors, formatEligibleMajorsForPrompt, canonicalBranch, AAUP_MAJORS } from "../lib/aaupData";
+import { db, interviewSessionsTable } from "@workspace/db";
+import { eq, sql } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -236,6 +238,27 @@ async function runTurn(
         sessionId ?? null,
       );
       req.log?.info({ recordId, sessionId }, "interview record saved");
+
+      // Stamp the recommendation onto the interview_sessions row so any device
+      // can retrieve the result via loadSessionsFromServer() without relying on
+      // localStorage or the completed_interviews fallback.
+      if (sessionId && user?.id) {
+        try {
+          await db
+            .update(interviewSessionsTable)
+            .set({
+              data: sql`jsonb_set(
+                jsonb_set(${interviewSessionsTable.data}, '{recommendation}', ${JSON.stringify(validated.data.recommendation)}::jsonb),
+                '{title}', ${JSON.stringify(validated.data.recommendation.recommendedMajor)}::jsonb
+              )`,
+              updatedAt: new Date(),
+            })
+            .where(eq(interviewSessionsTable.id, sessionId));
+          req.log?.info({ sessionId }, "interview_sessions stamped with recommendation");
+        } catch (stampErr) {
+          req.log?.warn({ stampErr, sessionId }, "failed to stamp recommendation onto interview_sessions");
+        }
+      }
     }
 
     return res.json(validated.data);

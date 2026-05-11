@@ -57,12 +57,15 @@ async function syncSessionToServer(session: StoredSession): Promise<void> {
     });
 
     if (res.status === 409) {
-      // Conflict: server has a newer version — pull it and merge into localStorage
+      // Conflict: server has a newer version — merge carefully, never lose a local recommendation
       const serverSession = (await res.json().catch(() => null)) as StoredSession | null;
       if (serverSession && serverSession.id) {
         const local = getSessions();
         const existing = local[serverSession.id];
-        if (!existing || new Date(serverSession.updatedAt) > new Date(existing.updatedAt)) {
+        // Only overwrite if server is newer AND the local copy has no recommendation
+        // (never replace a local recommendation with an older server snapshot)
+        const localHasRec = Boolean(existing?.recommendation);
+        if (!localHasRec && (!existing || new Date(serverSession.updatedAt) > new Date(existing.updatedAt))) {
           local[serverSession.id] = serverSession;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(local));
         }
