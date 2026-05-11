@@ -261,14 +261,27 @@ export default function Profile() {
             <button
               key={s.id}
               onClick={() => i < step && setStep(i)}
-              className="flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors"
+              className="flex-1 flex flex-col items-center gap-1 py-3 text-xs relative overflow-hidden"
               style={{
                 color: active ? RED : done ? "#2a8f60" : "var(--muted-foreground)",
-                borderBottom: active ? `2px solid ${RED}` : done ? `2px solid ${GREEN}` : "2px solid transparent",
+                transition: "color 0.25s ease",
               }}
             >
-              <Icon className="w-4 h-4" />
+              <Icon
+                key={`icon-${s.id}-${step}`}
+                className={`w-4 h-4 ${active ? "tab-icon-active" : done ? "tab-icon-done" : ""}`}
+              />
               <span className="hidden sm:block font-medium">{s.label}</span>
+
+              {/* animated bottom border */}
+              <span
+                key={`bar-${s.id}-${step}`}
+                className={`absolute bottom-0 left-0 right-0 h-0.5 ${active ? "tab-bar-active" : ""}`}
+                style={{
+                  background: active ? RED : done ? GREEN : "transparent",
+                  opacity: active || done ? 1 : 0,
+                }}
+              />
             </button>
           );
         })}
