@@ -176,8 +176,8 @@ async function runTurn(
     }
   }
 
-  try {
-    const completion = await openai.chat.completions.create({
+  const attemptTurn = async (): Promise<Awaited<ReturnType<typeof openai.chat.completions.create>>> => {
+    return openai.chat.completions.create({
       model: "gpt-4o",
       messages: chatMessages,
       response_format: {
@@ -188,7 +188,18 @@ async function runTurn(
           schema: RESPONSE_SCHEMA,
         },
       },
-    });
+    }, { signal: AbortSignal.timeout(40_000) });
+  };
+
+  try {
+    let completion: Awaited<ReturnType<typeof openai.chat.completions.create>>;
+    try {
+      completion = await attemptTurn();
+    } catch (firstErr) {
+      req.log?.warn({ err: firstErr }, "interview turn first attempt failed — retrying once");
+      await new Promise<void>((r) => setTimeout(r, 1500));
+      completion = await attemptTurn();
+    }
 
     const raw = completion.choices[0]?.message?.content;
     if (!raw || typeof raw !== "string") {

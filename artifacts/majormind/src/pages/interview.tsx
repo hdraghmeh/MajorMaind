@@ -96,10 +96,16 @@ export default function Interview() {
     setAvatarState("thinking");
     setMicroReaction(null);
 
+    const TURN_TIMEOUT_MS = 55_000;
+
     try {
-      const response = await turnMutation.mutateAsync({
+      const turnPromise = turnMutation.mutateAsync({
         data: { messages: currentMessages, forceFinalize, profileContext: profileContext ?? undefined, sessionId: s.id },
       });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), TURN_TIMEOUT_MS),
+      );
+      const response = await Promise.race([turnPromise, timeoutPromise]);
 
       const newSession = { ...s };
 
@@ -140,10 +146,13 @@ export default function Interview() {
       }
     } catch (err: unknown) {
       setAvatarState("idle");
+      const isTimeout = err instanceof Error && err.message === "timeout";
       const isNetwork = err instanceof TypeError && err.message.includes("fetch");
-      const description = isNetwork
-        ? "تعذّر الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً."
-        : "تعذّر الوصول إلى المستشار. يرجى المحاولة مجدداً.";
+      const description = isTimeout
+        ? "استغرق الرد وقتاً طويلاً. يرجى المحاولة مجدداً."
+        : isNetwork
+          ? "تعذّر الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً."
+          : "تعذّر الوصول إلى المستشار. يرجى المحاولة مجدداً.";
       toast({ title: "خطأ في الاتصال", description, variant: "destructive" });
     }
   };
