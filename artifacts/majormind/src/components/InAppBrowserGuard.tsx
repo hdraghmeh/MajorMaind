@@ -226,62 +226,74 @@ export default function InAppBrowserGuard({ children }: { children: React.ReactN
     );
   }
 
+  // Android — instructions only, no button
+  const steps = isFacebook
+    ? [
+        { n: "١", text: <>اضغط <strong style={{ background: "#e8e8e8", padding: "1px 7px", borderRadius: "6px", fontFamily: "monospace", fontSize: "15px" }}>···</strong> في الزاوية</> },
+        { n: "٢", text: <>اختر <strong>"فتح في Chrome"</strong> أو <strong>"فتح في المتصفح"</strong></> },
+      ]
+    : isInstagram
+    ? [
+        { n: "١", text: <>اضغط <strong style={{ background: "#e8e8e8", padding: "1px 7px", borderRadius: "6px", fontFamily: "monospace", fontSize: "15px" }}>···</strong> أعلى الشاشة</> },
+        { n: "٢", text: <>اختر <strong>"فتح في المتصفح الخارجي"</strong></> },
+      ]
+    : [
+        { n: "١", text: "انسخ الرابط من الأعلى" },
+        { n: "٢", text: <>افتح <strong>Chrome</strong> أو أي متصفح</> },
+        { n: "٣", text: "الصق الرابط وافتح الموقع" },
+      ];
+
   return (
     <>
       <style>{sharedStyles}</style>
       <div dir="rtl" style={pageStyle}>
-        <div style={{ ...cardStyle, padding: "32px 22px 26px" }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: "50%",
-            background: "linear-gradient(135deg,#84e4a8,#3db87f)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            margin: "0 auto 16px", fontSize: 30,
-          }}>
-            🌐
-          </div>
-
-          <h1 style={{ fontSize: "20px", color: "#71151a", marginBottom: "6px", fontWeight: 700 }}>
-            افتح في المتصفح
+        <div style={{ ...cardStyle, padding: "30px 20px 26px" }}>
+          <h1 style={{ fontSize: "19px", color: "#71151a", marginBottom: "4px", fontWeight: 800 }}>
+            افتح الموقع في متصفحك
           </h1>
-          <p style={{ fontSize: "13px", color: "#888", marginBottom: "24px" }}>
-            اضغط الزر أدناه لفتح الموقع في Chrome
+          <p style={{ fontSize: "13px", color: "#888", marginBottom: "20px", lineHeight: "1.6" }}>
+            لا يمكن تسجيل الدخول من داخل تطبيقات التواصل الاجتماعي
           </p>
 
-          <button
-            className="android-btn"
-            onClick={handleAndroidOpen}
-            style={{
-              display: "block", width: "100%",
-              background: androidOpened ? "#84e4a8" : "#71151a",
-              color: androidOpened ? "#1a5c3a" : "#fff",
-              border: "none", padding: "16px 0",
-              borderRadius: "14px", fontSize: "17px", fontWeight: 800,
-              cursor: "pointer", marginBottom: "12px", fontFamily: "inherit",
-              transition: "background 0.3s, color 0.3s",
-            }}
-          >
-            {androidOpened ? "✓ جارٍ الفتح..." : "فتح في Chrome"}
-          </button>
-
-          {androidOpened && (
-            <p style={{ fontSize: "12px", color: "#888", marginBottom: "12px" }}>
-              لم يفتح؟ انسخ الرابط وافتح Chrome يدوياً
-            </p>
-          )}
+          <div style={{
+            background: "#f0fdf4",
+            border: "2px solid #84e4a8",
+            borderRadius: "14px",
+            padding: "16px 14px",
+            marginBottom: "16px",
+            textAlign: "right",
+          }}>
+            <div style={{ fontSize: "12px", fontWeight: 800, color: "#1a5c3a", marginBottom: "10px" }}>
+              كيف تفتحه؟
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {steps.map((s) => (
+                <div key={s.n} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", color: "#333" }}>
+                  <span style={{
+                    background: "#71151a", color: "#fff",
+                    borderRadius: "50%", width: 24, height: 24, flexShrink: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "12px", fontWeight: 800,
+                  }}>{s.n}</span>
+                  <span>{s.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <button
             onClick={handleCopy}
             style={{
               display: "block", width: "100%",
-              background: copied ? "#84e4a8" : "#f0f0ea",
-              color: copied ? "#1a5c3a" : "#666",
-              border: "none", padding: "13px 0",
-              borderRadius: "12px", fontSize: "14px", fontWeight: 700,
+              background: copied ? "#84e4a8" : "#71151a",
+              color: copied ? "#1a5c3a" : "#fff",
+              border: "none", padding: "14px 0",
+              borderRadius: "12px", fontSize: "15px", fontWeight: 700,
               cursor: "pointer", fontFamily: "inherit",
               transition: "background 0.25s, color 0.25s",
             }}
           >
-            {copied ? "✓ تم نسخ الرابط" : "نسخ الرابط"}
+            {copied ? "✓ تم نسخ الرابط" : "انسخ الرابط"}
           </button>
         </div>
       </div>
