@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useAuth } from "@workspace/replit-auth-web";
 import { getSession, saveSession, loadSessionsFromServer, mergeServerSessions, createSession, type StoredSession } from "@/lib/sessions";
 import { Button, Card, CardContent, CardHeader, CardTitle, Chip } from "@heroui/react";
-import { ArrowRight, Copy, ExternalLink, GraduationCap, Lightbulb, RefreshCw, Sparkles, Star, TrendingUp } from "lucide-react";
+import { ArrowRight, ExternalLink, GraduationCap, Lightbulb, RefreshCw, Sparkles, Star, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import logoUrl from "/logo.png";
 
@@ -11,18 +11,18 @@ const CLEAN = (s: string) => s.replace(/[\u{1F300}-\u{1F9FF}]/gu, "").trim();
 
 function useCountUp(target: number, duration = 1200) {
   const [count, setCount] = useState(0);
-  const started = useRef(false);
   useEffect(() => {
-    if (started.current) return;
-    started.current = true;
+    if (target === 0) return;
     const start = performance.now();
+    let raf: number;
     const tick = (now: number) => {
       const progress = Math.min((now - start) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
       setCount(Math.round(eased * target));
-      if (progress < 1) requestAnimationFrame(tick);
+      if (progress < 1) raf = requestAnimationFrame(tick);
     };
-    requestAnimationFrame(tick);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [target, duration]);
   return count;
 }
@@ -262,21 +262,6 @@ export default function Result() {
 
   const countedScore = useCountUp(session?.recommendation?.matchScore ?? 0, 1400);
 
-  const handleCopy = useCallback(() => {
-    const r = session?.recommendation;
-    if (!r) return;
-    const text = [
-      `التخصص الموصى به: ${r.recommendedMajor}`,
-      `نسبة التوافق: ${r.matchScore}%`,
-      `\nلماذا يناسبك:\n${r.whyItFits.map((x) => `- ${x}`).join("\n")}`,
-      `\nالتخصصات البديلة:\n${r.alternativeMajors.map((x) => `- ${x}`).join("\n")}`,
-      `\nنقاط القوة الأكاديمية:\n${r.academicStrengths.map((x) => `- ${x}`).join("\n")}`,
-      `\nالنصائح المهنية:\n${r.careerAdvice.map((x) => `- ${x}`).join("\n")}`,
-      `\nرسالة المستشار:\n${r.closingMessage}`,
-    ].join("\n");
-    navigator.clipboard.writeText(text);
-    toast({ title: "تم النسخ إلى الحافظة" });
-  }, [session?.recommendation]);
 
 
   if (loading) {
@@ -317,12 +302,6 @@ export default function Result() {
               <ArrowRight className="w-4 h-4 ml-1.5" /> الرئيسية
             </Button>
             <img src={logoUrl} alt="MajorMind" className="h-7 w-auto object-contain hidden sm:block opacity-70" />
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onPress={handleCopy}>
-              <Copy className="w-3.5 h-3.5 sm:ml-1.5" />
-              <span className="hidden sm:inline">نسخ</span>
-            </Button>
           </div>
         </div>
       </header>
