@@ -1,5 +1,13 @@
 {
   "version": 2,
+  "buildCommand": "pnpm install && pnpm --filter @workspace/db build && pnpm --filter @workspace/api-zod build && pnpm --filter @workspace/api-client-react build && pnpm --filter @workspace/api-server build && pnpm --filter @workspace/majormind build",
+  "outputDirectory": "artifacts/majormind/dist/public",
+  "framework": null,
+  "functions": {
+    "api/index.mjs": {
+      "runtime": "@vercel/node@5"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -7,7 +15,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/api/index.mjs"
+      "destination": "/index.html"
     }
   ]
 }
