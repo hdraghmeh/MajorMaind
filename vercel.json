@@ -1,16 +1,18 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "index.mjs",
-      "use": "@vercel/node"
+      "source": "/api/(.*)",
+      "destination": "/api/index.mjs"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.mjs"
     }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "index.mjs"
+  "functions": {
+    "api/index.mjs": {
+      "runtime": "nodejs20.x"
     }
-  ],
-  "outputDirectory": "dist"
+  }
 }
